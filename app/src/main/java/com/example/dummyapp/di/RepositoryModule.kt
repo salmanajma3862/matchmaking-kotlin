@@ -40,4 +40,15 @@ object RepositoryModule {
     ): UserRepository {
         return UserRepository(userApiService, userPreferences)
     }
+
+    /**
+     * Provide SwipeRepository
+     */
+    @Provides
+    @Singleton
+    fun provideSwipeRepository(
+        swipeApiService: com.example.dummyapp.data.api.SwipeApiService
+    ): com.example.dummyapp.data.repository.SwipeRepository {
+        return com.example.dummyapp.data.repository.SwipeRepository(swipeApiService)
+    }
 }

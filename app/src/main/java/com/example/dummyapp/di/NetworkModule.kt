@@ -112,15 +112,6 @@ object NetworkModule {
     }
     
     /**
-     * Provide MatchApiService
-     */
-    @Provides
-    @Singleton
-    fun provideMatchApiService(retrofit: Retrofit): MatchApiService {
-        return retrofit.create(MatchApiService::class.java)
-    }
-    
-    /**
      * Provide MessageApiService
      */
     @Provides
@@ -136,5 +127,14 @@ object NetworkModule {
     @Singleton
     fun provideNotificationApiService(retrofit: Retrofit): NotificationApiService {
         return retrofit.create(NotificationApiService::class.java)
+    }
+    
+    /**
+     * Provide SwipeApiService
+     */
+    @Provides
+    @Singleton
+    fun provideSwipeApiService(retrofit: Retrofit): SwipeApiService {
+        return retrofit.create(SwipeApiService::class.java)
     }
 }

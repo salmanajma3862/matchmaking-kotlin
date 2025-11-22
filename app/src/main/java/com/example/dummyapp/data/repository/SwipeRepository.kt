@@ -1,0 +1,76 @@
+package com.example.dummyapp.data.repository
+
+import com.example.dummyapp.data.api.SwipeApiService
+import com.example.dummyapp.data.models.request.SwipeRequest
+import com.example.dummyapp.data.models.response.MatchItem
+import com.example.dummyapp.data.models.response.SwipeResponseData
+import com.example.dummyapp.utils.Constants
+import com.example.dummyapp.utils.NetworkResult
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import retrofit2.HttpException
+import java.io.IOException
+import javax.inject.Inject
+
+class SwipeRepository @Inject constructor(
+    private val swipeApiService: SwipeApiService
+) {
+
+    /**
+     * Record a swipe (like, dislike, superlike)
+     */
+    fun recordSwipe(targetUserId: String, action: String): Flow<NetworkResult<SwipeResponseData>> = flow {
+        emit(NetworkResult.Loading())
+
+        try {
+            val request = SwipeRequest(targetUserId, action)
+            val response = swipeApiService.recordSwipe(request)
+
+            if (response.isSuccessful && response.body() != null) {
+                val apiResponse = response.body()!!
+                if (apiResponse.success && apiResponse.data != null) {
+                    emit(NetworkResult.Success(apiResponse.data))
+                } else {
+                    emit(NetworkResult.Error(apiResponse.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+                }
+            } else {
+                // Parse error body if possible
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: HttpException) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.NETWORK_ERROR))
+        } catch (e: IOException) {
+            emit(NetworkResult.Error(Constants.ErrorMessages.NETWORK_ERROR))
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+
+    /**
+     * Get matches list
+     */
+    fun getMatches(page: Int = 1, limit: Int = 20): Flow<NetworkResult<List<MatchItem>>> = flow {
+        emit(NetworkResult.Loading())
+
+        try {
+            val response = swipeApiService.getMatches(page, limit)
+
+            if (response.isSuccessful && response.body() != null) {
+                val apiResponse = response.body()!!
+                if (apiResponse.success && apiResponse.data != null) {
+                    emit(NetworkResult.Success(apiResponse.data))
+                } else {
+                    emit(NetworkResult.Error(apiResponse.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+                }
+            } else {
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: HttpException) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.NETWORK_ERROR))
+        } catch (e: IOException) {
+            emit(NetworkResult.Error(Constants.ErrorMessages.NETWORK_ERROR))
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+}

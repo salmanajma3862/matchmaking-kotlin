@@ -142,14 +142,6 @@ data class UpdateProfileRequest(
 // ==================== Match & Swipe Requests ====================
 
 /**
- * Swipe Request
- */
-data class SwipeRequest(
-    val targetUserId: String,
-    val action: String // "like", "dislike", "super_like"
-)
-
-/**
  * Send Interest Request
  */
 data class SendInterestRequest(

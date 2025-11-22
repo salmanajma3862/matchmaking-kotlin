@@ -9,13 +9,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dummyapp.ui.screens.auth.LoginScreen
 import com.example.dummyapp.ui.screens.auth.SignupScreen
 import com.example.dummyapp.ui.screens.auth.VerifyEmailScreen
-import com.example.dummyapp.ui.screens.home.HomeScreen
+import com.example.dummyapp.ui.screens.FeedScreen
 import com.example.dummyapp.ui.screens.profile_setup.ProfileSetupScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Signup : Screen("signup")
-    object Home : Screen("home")
+    object Feed : Screen("feed")
     object VerifyEmail : Screen("verify_email/{email}") {
         fun createRoute(email: String) = "verify_email/$email"
     }
@@ -38,7 +38,7 @@ fun AppNavigation(
                 onNavigateToSignup = { navController.navigate(Screen.Signup.route) },
                 onNavigateToForgotPassword = { /* TODO */ },
                 onNavigateToHome = { 
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.Feed.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
@@ -77,14 +77,14 @@ fun AppNavigation(
         composable(Screen.ProfileSetup.route) {
             ProfileSetupScreen(
                 onNavigateToHome = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.Feed.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
             )
         }
-        composable(Screen.Home.route) {
-            HomeScreen()
+        composable(Screen.Feed.route) {
+            FeedScreen()
         }
     }
 }

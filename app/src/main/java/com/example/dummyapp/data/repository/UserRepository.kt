@@ -57,6 +57,35 @@ class UserRepository @Inject constructor(
     }
     
     /**
+     * Get recommended users feed
+     */
+    fun getFeed(page: Int = 1, limit: Int = 10): Flow<NetworkResult<List<User>>> = flow {
+        emit(NetworkResult.Loading())
+        
+        try {
+            val response = userApiService.getFeed(page, limit)
+            
+            if (response.isSuccessful && response.body() != null) {
+                val apiResponse = response.body()!!
+                
+                if (apiResponse.success && apiResponse.data != null) {
+                    emit(NetworkResult.Success(apiResponse.data))
+                } else {
+                    emit(NetworkResult.Error(apiResponse.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+                }
+            } else {
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: HttpException) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.NETWORK_ERROR))
+        } catch (e: IOException) {
+            emit(NetworkResult.Error(Constants.ErrorMessages.NETWORK_ERROR))
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+
+    /**
      * Update user profile
      */
     fun updateProfile(request: UpdateProfileRequest): Flow<NetworkResult<User>> = flow {
@@ -150,12 +179,12 @@ class UserRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 val completeResponse = response.body()!!
                 
-                if (completeResponse.success) {
+                if (completeResponse.success && completeResponse.user != null) {
                     // Mark profile as complete
                     userPreferences.setProfileComplete(true)
                     
                     // Update user name if returned
-                    completeResponse.user?.name?.let { userPreferences.saveUserName(it) }
+                    completeResponse.user.name.let { userPreferences.saveUserName(it) }
                     
                     emit(NetworkResult.Success(completeResponse.user))
                 } else {

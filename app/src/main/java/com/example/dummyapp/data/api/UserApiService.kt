@@ -48,8 +48,17 @@ interface UserApiService {
         @Part("familyBackground") familyBackground: RequestBody? = null,
         @Part("numberOfSiblings") numberOfSiblings: RequestBody? = null,
         @Part("livingWithFamily") livingWithFamily: RequestBody? = null
-    ): Response<CompleteProfileResponse>
-    
+    ): Response<AuthResponse>
+
+    /**
+     * Get recommended users feed
+     */
+    @GET(Constants.Endpoints.GET_FEED)
+    suspend fun getFeed(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 10
+    ): Response<ApiResponse<List<com.example.dummyapp.data.models.User>>>
+
     /**
      * Get user profile by ID
      */

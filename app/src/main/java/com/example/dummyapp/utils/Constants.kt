@@ -35,15 +35,15 @@ object Constants {
         // User endpoints
         const val USER_BASE = "api/user"
         const val COMPLETE_PROFILE = "$USER_BASE/complete-profile"
+        const val GET_FEED = "$USER_BASE/feed"
         const val GET_PROFILE = "$USER_BASE/profile/{userId}"
         const val UPDATE_PROFILE = "$USER_BASE/profile"
         const val DELETE_ACCOUNT = "$USER_BASE/account"
         
-        // Match endpoints (to be added)
-        const val MATCH_BASE = "api/match"
-        const val GET_MATCHES = "$MATCH_BASE/matches"
-        const val SWIPE = "$MATCH_BASE/swipe"
-        const val SEND_INTEREST = "$MATCH_BASE/interest"
+        // Swipe endpoints
+        const val SWIPE_BASE = "api/swipe"
+        const val SWIPE_ACTION = "$SWIPE_BASE/"
+        const val GET_MATCHES = "$SWIPE_BASE/matches"
         
         // Message endpoints (to be added)
         const val MESSAGE_BASE = "api/messages"
