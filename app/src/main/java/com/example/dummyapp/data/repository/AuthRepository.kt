@@ -31,23 +31,15 @@ class AuthRepository @Inject constructor(
      * Sign up a new user
      */
     fun signup(
-        name: String,
-        phone: String,
         email: String,
-        password: String,
-        gender: String,
-        dob: String
+        password: String
     ): Flow<NetworkResult<User>> = flow {
         emit(NetworkResult.Loading())
         
         try {
             val request = SignupRequest(
-                name = name,
-                phone = phone,
                 email = email,
-                password = password,
-                gender = gender,
-                dob = dob
+                password = password
             )
             
             val response = authApiService.signup(request)
@@ -96,13 +88,13 @@ class AuthRepository @Inject constructor(
      * Login user
      */
     fun login(
-        phone: String,
+        email: String,
         password: String
     ): Flow<NetworkResult<User>> = flow {
         emit(NetworkResult.Loading())
         
         try {
-            val request = LoginRequest(phone = phone, password = password)
+            val request = LoginRequest(email = email, password = password)
             val response = authApiService.login(request)
             
             if (response.isSuccessful && response.body() != null) {

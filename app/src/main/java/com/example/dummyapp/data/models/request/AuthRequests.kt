@@ -13,19 +13,15 @@ import com.google.gson.annotations.SerializedName
  * Signup Request
  */
 data class SignupRequest(
-    val name: String,
-    val phone: String,
     val email: String,
-    val password: String,
-    val gender: String, // "male" or "female"
-    val dob: String // ISO date string
+    val password: String
 )
 
 /**
  * Login Request
  */
 data class LoginRequest(
-    val phone: String,
+    val email: String,
     val password: String
 )
 
@@ -67,6 +63,10 @@ data class ResetPasswordRequest(
  * Sent after email verification with photos and additional details
  */
 data class CompleteProfileRequest(
+    val name: String? = null,
+    val phone: String? = null,
+    val gender: String? = null,
+    val dob: String? = null,
     val bio: String? = null,
     val height: Int? = null,
     val weight: Int? = null,

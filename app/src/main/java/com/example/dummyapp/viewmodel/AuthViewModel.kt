@@ -40,9 +40,9 @@ class AuthViewModel @Inject constructor(
     /**
      * Login user
      */
-    fun login(phone: String, password: String) {
+    fun login(email: String, password: String) {
         viewModelScope.launch {
-            authRepository.login(phone, password).collect { result ->
+            authRepository.login(email, password).collect { result ->
                 _loginState.value = result
             }
         }
@@ -52,15 +52,11 @@ class AuthViewModel @Inject constructor(
      * Sign up new user
      */
     fun signup(
-        name: String,
-        phone: String,
         email: String,
-        password: String,
-        gender: String,
-        dob: String
+        password: String
     ) {
         viewModelScope.launch {
-            authRepository.signup(name, phone, email, password, gender, dob).collect { result ->
+            authRepository.signup(email, password).collect { result ->
                 _signupState.value = result
             }
         }

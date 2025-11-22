@@ -111,6 +111,10 @@ class UserRepository @Inject constructor(
             
             val response = userApiService.completeProfile(
                 photos = photoParts,
+                name = createPart(profileData.name),
+                phone = createPart(profileData.phone),
+                gender = createPart(profileData.gender),
+                dob = createPart(profileData.dob),
                 bio = createPart(profileData.bio),
                 height = createPart(profileData.height),
                 weight = createPart(profileData.weight),

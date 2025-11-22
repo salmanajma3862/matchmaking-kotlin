@@ -23,6 +23,10 @@ interface UserApiService {
     @POST(Constants.Endpoints.COMPLETE_PROFILE)
     suspend fun completeProfile(
         @Part photos: List<MultipartBody.Part>,
+        @Part("name") name: RequestBody? = null,
+        @Part("phone") phone: RequestBody? = null,
+        @Part("gender") gender: RequestBody? = null,
+        @Part("dob") dob: RequestBody? = null,
         @Part("bio") bio: RequestBody? = null,
         @Part("height") height: RequestBody? = null,
         @Part("weight") weight: RequestBody? = null,

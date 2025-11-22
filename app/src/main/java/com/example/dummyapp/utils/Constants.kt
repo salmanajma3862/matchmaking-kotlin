@@ -10,9 +10,10 @@ object Constants {
     
     /**
      * Base URL for the API
-     * TODO: Update this with your actual server URL
+     * Using localhost because we are using 'adb reverse tcp:5000 tcp:5000'
      */
-    const val BASE_URL = "http://10.0.2.2:3000/" // Android emulator localhost
+    const val BASE_URL = "http://localhost:5000/"
+    // const val BASE_URL = "http://10.0.2.2:5000/" // Fallback for emulator
     // const val BASE_URL = "https://your-production-api.com/" // Production
     
     /**

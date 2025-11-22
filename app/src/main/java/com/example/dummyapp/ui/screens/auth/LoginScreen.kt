@@ -45,9 +45,9 @@ fun LoginScreen(
     val focusManager = LocalFocusManager.current
     
     // Form state
-    var phone by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var phoneError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     
     // Login state
@@ -121,15 +121,15 @@ fun LoginScreen(
             
             Spacer(modifier = Modifier.height(AppSpacing.ExtraLarge2x))
             
-            // Phone Input
-            PhoneTextField(
-                value = phone,
+            // Email Input
+            EmailTextField(
+                value = email,
                 onValueChange = {
-                    phone = it
-                    phoneError = null
+                    email = it
+                    emailError = null
                 },
-                isError = phoneError != null,
-                errorMessage = phoneError,
+                isError = emailError != null,
+                errorMessage = emailError,
                 keyboardActions = androidx.compose.foundation.text.KeyboardActions(
                     onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down) }
                 )
@@ -203,11 +203,11 @@ fun LoginScreen(
                     // Validate inputs
                     var isValid = true
                     
-                    if (phone.isEmpty()) {
-                        phoneError = "Phone number is required"
+                    if (email.isEmpty()) {
+                        emailError = "Email is required"
                         isValid = false
-                    } else if (!ValidationUtils.isValidPhone(phone)) {
-                        phoneError = "Invalid phone number"
+                    } else if (!ValidationUtils.isValidEmail(email)) {
+                        emailError = "Invalid email address"
                         isValid = false
                     }
                     
@@ -217,8 +217,7 @@ fun LoginScreen(
                     }
                     
                     if (isValid) {
-                        val normalizedPhone = ValidationUtils.normalizePhoneNumber(phone)
-                        viewModel.login(normalizedPhone, password)
+                        viewModel.login(email, password)
                     }
                 },
                 loading = loginState is NetworkResult.Loading,
