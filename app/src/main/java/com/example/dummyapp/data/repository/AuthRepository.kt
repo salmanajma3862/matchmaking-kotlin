@@ -120,7 +120,23 @@ class AuthRepository @Inject constructor(
                     emit(NetworkResult.Error(authResponse.message))
                 }
             } else {
-                emit(NetworkResult.Error(Constants.ErrorMessages.INVALID_CREDENTIALS))
+                // Handle error response
+                val errorBody = response.errorBody()?.string()
+                if (errorBody != null) {
+                    try {
+                        val gson = com.google.gson.Gson()
+                        val authResponse = gson.fromJson(errorBody, com.example.dummyapp.data.models.response.AuthResponse::class.java)
+                        if (authResponse.requiresVerification == true) {
+                            emit(NetworkResult.Error("VERIFICATION_REQUIRED"))
+                        } else {
+                            emit(NetworkResult.Error(authResponse.message))
+                        }
+                    } catch (e: Exception) {
+                        emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.INVALID_CREDENTIALS))
+                    }
+                } else {
+                    emit(NetworkResult.Error(Constants.ErrorMessages.INVALID_CREDENTIALS))
+                }
             }
         } catch (e: HttpException) {
             emit(NetworkResult.Error(Constants.ErrorMessages.INVALID_CREDENTIALS))
@@ -148,6 +164,24 @@ class AuthRepository @Inject constructor(
                 val verifyResponse = response.body()!!
                 
                 if (verifyResponse.success && verifyResponse.isVerified) {
+                    // Save auth data if provided
+                    verifyResponse.token?.let { token ->
+                        userPreferences.saveAuthToken(token)
+                    }
+                    
+                    verifyResponse.user?.let { user ->
+                        userPreferences.saveAuthData(
+                            token = verifyResponse.token ?: "",
+                            refreshToken = null, // Verify response might not have refresh token
+                            userId = user.id,
+                            email = user.email ?: "",
+                            name = user.name,
+                            phone = user.phone,
+                            isEmailVerified = true,
+                            isProfileComplete = user.photos?.isNotEmpty() ?: false
+                        )
+                    }
+
                     userPreferences.setEmailVerified(true)
                     emit(NetworkResult.Success(true))
                 } else {

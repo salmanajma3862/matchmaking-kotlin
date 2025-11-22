@@ -38,6 +38,8 @@ fun LoginScreen(
     onNavigateToSignup: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
     onNavigateToHome: () -> Unit,
+    onNavigateToVerifyEmail: (String) -> Unit,
+    onNavigateToProfileSetup: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val colors = LocalExtendedColors.current
@@ -60,10 +62,19 @@ fun LoginScreen(
                 val user = (loginState as NetworkResult.Success).data
                 authContext.setUser(user!!)
                 viewModel.clearLoginState()
-                onNavigateToHome()
+                
+                if (user.onboardingCompleted) {
+                    onNavigateToHome()
+                } else {
+                    onNavigateToProfileSetup()
+                }
             }
             is NetworkResult.Error -> {
-                // Error is shown in UI
+                val error = loginState as NetworkResult.Error
+                if (error.message == "VERIFICATION_REQUIRED") {
+                    viewModel.clearLoginState()
+                    onNavigateToVerifyEmail(email)
+                }
             }
             else -> {}
         }

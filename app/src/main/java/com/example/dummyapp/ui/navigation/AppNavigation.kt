@@ -9,7 +9,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dummyapp.ui.screens.auth.LoginScreen
 import com.example.dummyapp.ui.screens.auth.SignupScreen
 import com.example.dummyapp.ui.screens.auth.VerifyEmailScreen
-import com.example.dummyapp.ui.screens.profile.ProfileSetupScreen
+import com.example.dummyapp.ui.screens.home.HomeScreen
+import com.example.dummyapp.ui.screens.profile_setup.ProfileSetupScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -38,6 +39,14 @@ fun AppNavigation(
                 onNavigateToForgotPassword = { /* TODO */ },
                 onNavigateToHome = { 
                     navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
+                onNavigateToVerifyEmail = { email ->
+                    navController.navigate(Screen.VerifyEmail.createRoute(email))
+                },
+                onNavigateToProfileSetup = {
+                    navController.navigate(Screen.ProfileSetup.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
@@ -75,8 +84,7 @@ fun AppNavigation(
             )
         }
         composable(Screen.Home.route) {
-            // Placeholder for Home
-            androidx.compose.material3.Text("Home Screen")
+            HomeScreen()
         }
     }
 }

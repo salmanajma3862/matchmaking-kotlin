@@ -66,6 +66,9 @@ data class User(
     val isVerified: Boolean = false,
     val verificationBadge: String? = null,
     
+    // Onboarding
+    val onboardingCompleted: Boolean = false,
+
     // Computed fields
     val age: Int? = null,
     val matchPercentage: Int? = null,

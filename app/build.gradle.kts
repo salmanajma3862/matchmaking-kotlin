@@ -57,13 +57,14 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    
+    implementation(libs.coil.compose)
+
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
-    
+
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
-    
+
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
 

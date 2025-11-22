@@ -100,7 +100,16 @@ class UserRepository @Inject constructor(
         try {
             // Prepare photo parts
             val photoParts = photoFiles.mapIndexed { index, file ->
-                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                // Determine mime type based on extension
+                val extension = file.extension.lowercase()
+                val mimeType = when {
+                    extension == "png" -> "image/png"
+                    extension == "webp" -> "image/webp"
+                    extension == "jpg" || extension == "jpeg" -> "image/jpeg"
+                    else -> "image/jpeg" // Default to jpeg if unknown
+                }
+                
+                val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
                 MultipartBody.Part.createFormData("photos", file.name, requestFile)
             }
             
@@ -144,6 +153,9 @@ class UserRepository @Inject constructor(
                 if (completeResponse.success) {
                     // Mark profile as complete
                     userPreferences.setProfileComplete(true)
+                    
+                    // Update user name if returned
+                    completeResponse.user?.name?.let { userPreferences.saveUserName(it) }
                     
                     emit(NetworkResult.Success(completeResponse.user))
                 } else {

@@ -30,7 +30,8 @@ data class AuthResponse(
     val message: String,
     val token: String? = null,
     val refreshToken: String? = null,
-    val user: User? = null
+    val user: User? = null,
+    val requiresVerification: Boolean? = null
 )
 
 /**
@@ -39,7 +40,9 @@ data class AuthResponse(
 data class VerifyEmailResponse(
     val success: Boolean,
     val message: String,
-    val isVerified: Boolean
+    val isVerified: Boolean,
+    val token: String? = null,
+    val user: User? = null
 )
 
 /**
