@@ -292,7 +292,7 @@ class AuthRepository @Inject constructor(
                 val userResponse = response.body()!!
                 
                 if (userResponse.success) {
-                    emit(NetworkResult.Success(userResponse.user))
+                    emit(NetworkResult.Success(userResponse.data))
                 } else {
                     emit(NetworkResult.Error(Constants.ErrorMessages.UNKNOWN_ERROR))
                 }

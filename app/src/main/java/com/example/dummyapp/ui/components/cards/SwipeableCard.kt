@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -47,6 +48,7 @@ fun SwipeableCard(
     user: User,
     onSwipeLeft: () -> Unit,
     onSwipeRight: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
@@ -63,6 +65,7 @@ fun SwipeableCard(
         modifier = modifier
             .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
             .rotate(rotation.value)
+            .clickable(onClick = onClick)
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragEnd = {

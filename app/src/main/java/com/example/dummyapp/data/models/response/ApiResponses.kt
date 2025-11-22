@@ -60,7 +60,7 @@ data class PasswordResetResponse(
  */
 data class UserProfileResponse(
     val success: Boolean,
-    val user: User
+    val data: User
 )
 
 /**

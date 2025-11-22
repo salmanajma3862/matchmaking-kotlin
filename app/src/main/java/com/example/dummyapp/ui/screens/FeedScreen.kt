@@ -19,6 +19,7 @@ import com.example.dummyapp.viewmodel.FeedViewModel
 
 @Composable
 fun FeedScreen(
+    onNavigateToProfileDetail: (String) -> Unit,
     viewModel: FeedViewModel = hiltViewModel()
 ) {
     val userList by viewModel.userList.collectAsState()
@@ -71,6 +72,9 @@ fun FeedScreen(
                         },
                         onSwipeRight = {
                             viewModel.swipeUser(user.id, "like")
+                        },
+                        onClick = {
+                            onNavigateToProfileDetail(user.id)
                         },
                         modifier = Modifier.fillMaxWidth()
                     )

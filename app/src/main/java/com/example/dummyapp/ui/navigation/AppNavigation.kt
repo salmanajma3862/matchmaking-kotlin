@@ -9,17 +9,20 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dummyapp.ui.screens.auth.LoginScreen
 import com.example.dummyapp.ui.screens.auth.SignupScreen
 import com.example.dummyapp.ui.screens.auth.VerifyEmailScreen
-import com.example.dummyapp.ui.screens.FeedScreen
+import com.example.dummyapp.ui.screens.MainScreen
 import com.example.dummyapp.ui.screens.profile_setup.ProfileSetupScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Signup : Screen("signup")
-    object Feed : Screen("feed")
+    object Main : Screen("main")
     object VerifyEmail : Screen("verify_email/{email}") {
         fun createRoute(email: String) = "verify_email/$email"
     }
     object ProfileSetup : Screen("profile_setup")
+    object ProfileDetail : Screen("profile_detail/{userId}") {
+        fun createRoute(userId: String) = "profile_detail/$userId"
+    }
 }
 
 @Composable
@@ -38,7 +41,7 @@ fun AppNavigation(
                 onNavigateToSignup = { navController.navigate(Screen.Signup.route) },
                 onNavigateToForgotPassword = { /* TODO */ },
                 onNavigateToHome = { 
-                    navController.navigate(Screen.Feed.route) {
+                    navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
@@ -77,14 +80,25 @@ fun AppNavigation(
         composable(Screen.ProfileSetup.route) {
             ProfileSetupScreen(
                 onNavigateToHome = {
-                    navController.navigate(Screen.Feed.route) {
+                    navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
             )
         }
-        composable(Screen.Feed.route) {
-            FeedScreen()
+        composable(Screen.Main.route) {
+            MainScreen(
+                onNavigateToProfileDetail = { userId ->
+                    navController.navigate(Screen.ProfileDetail.createRoute(userId))
+                }
+            )
+        }
+        composable(Screen.ProfileDetail.route) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            com.example.dummyapp.ui.screens.profile.ProfileDetailScreen(
+                userId = userId,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }
