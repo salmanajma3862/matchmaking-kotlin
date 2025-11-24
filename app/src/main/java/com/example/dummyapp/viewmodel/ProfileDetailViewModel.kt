@@ -3,12 +3,16 @@ package com.example.dummyapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dummyapp.data.models.User
+import com.example.dummyapp.data.repository.ChatRepository
 import com.example.dummyapp.data.repository.SwipeRepository
 import com.example.dummyapp.data.repository.UserRepository
 import com.example.dummyapp.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileDetailViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val swipeRepository: SwipeRepository
+    private val swipeRepository: SwipeRepository,
+    private val chatRepository: ChatRepository
 ) : ViewModel() {
 
     private val _userState = MutableStateFlow<NetworkResult<User>>(NetworkResult.Loading())
@@ -24,6 +29,9 @@ class ProfileDetailViewModel @Inject constructor(
 
     private val _actionState = MutableStateFlow<NetworkResult<Unit>?>(null)
     val actionState: StateFlow<NetworkResult<Unit>?> = _actionState.asStateFlow()
+
+    private val _navigationEvent = MutableSharedFlow<String>()
+    val navigationEvent: SharedFlow<String> = _navigationEvent.asSharedFlow()
 
     fun fetchUserProfile(userId: String) {
         viewModelScope.launch {
@@ -81,5 +89,16 @@ class ProfileDetailViewModel @Inject constructor(
 
     fun resetActionState() {
         _actionState.value = null
+    }
+
+    fun initiateMessage(targetUserId: String) {
+        viewModelScope.launch {
+            val result = chatRepository.createConversation(targetUserId)
+            result.onSuccess { conversation ->
+                _navigationEvent.emit(conversation.id)
+            }.onFailure { error ->
+                _actionState.value = NetworkResult.Error(error.message ?: "Failed to start chat")
+            }
+        }
     }
 }

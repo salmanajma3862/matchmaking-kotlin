@@ -45,6 +45,7 @@ fun ProfileDetailScreen(
     userId: String,
     matchStatus: String = "none", // sent, received, match, none
     onNavigateBack: () -> Unit,
+    onNavigateToChat: (String) -> Unit,
     viewModel: ProfileDetailViewModel = hiltViewModel()
 ) {
     LaunchedEffect(userId) {
@@ -54,6 +55,13 @@ fun ProfileDetailScreen(
     val userState by viewModel.userState.collectAsState()
     val actionState by viewModel.actionState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Handle navigation events
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect { conversationId ->
+            onNavigateToChat(conversationId)
+        }
+    }
 
     // Handle action results
     LaunchedEffect(actionState) {
@@ -103,6 +111,7 @@ fun ProfileDetailScreen(
                 onAccept = { viewModel.acceptMatch(userId) },
                 onReject = { viewModel.rejectMatch(userId) },
                 onUnmatch = { viewModel.unmatchUser(userId) },
+                onMessage = { viewModel.initiateMessage(userId) },
                 snackbarHostState = snackbarHostState
             )
         }
@@ -119,6 +128,7 @@ fun ProfileDetailContent(
     onAccept: () -> Unit,
     onReject: () -> Unit,
     onUnmatch: () -> Unit,
+    onMessage: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     Scaffold(
@@ -148,7 +158,8 @@ fun ProfileDetailContent(
                     onUndoSwipe = onUndoSwipe,
                     onAccept = onAccept,
                     onReject = onReject,
-                    onUnmatch = onUnmatch
+                    onUnmatch = onUnmatch,
+                    onMessage = onMessage
                 )
             }
         }
@@ -328,7 +339,8 @@ fun BottomActionBar(
     onUndoSwipe: () -> Unit,
     onAccept: () -> Unit,
     onReject: () -> Unit,
-    onUnmatch: () -> Unit
+    onUnmatch: () -> Unit,
+    onMessage: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -368,7 +380,7 @@ fun BottomActionBar(
                     Text("Unmatch")
                 }
                 Button(
-                    onClick = { /* Navigate to chat */ },
+                    onClick = onMessage,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("Message")

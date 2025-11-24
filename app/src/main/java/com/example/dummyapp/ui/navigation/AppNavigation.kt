@@ -112,7 +112,10 @@ fun AppNavigation(
             com.example.dummyapp.ui.screens.profile.ProfileDetailScreen(
                 userId = userId,
                 matchStatus = matchStatus,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToChat = { conversationId ->
+                    navController.navigate(Screen.Chat.createRoute(conversationId))
+                }
             )
         }
         composable(
