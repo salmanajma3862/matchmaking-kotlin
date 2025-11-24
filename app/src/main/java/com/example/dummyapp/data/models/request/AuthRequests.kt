@@ -151,16 +151,6 @@ data class SendInterestRequest(
 
 // ==================== Message Requests ====================
 
-/**
- * Send Message Request
- */
-data class SendMessageRequest(
-    val conversationId: String? = null, // null for first message
-    val receiverId: String,
-    val text: String,
-    val type: String = "text", // "text", "image", "voice"
-    val mediaUrl: String? = null
-)
 
 /**
  * Mark Message as Read Request

@@ -13,6 +13,7 @@ import com.example.dummyapp.ui.screens.auth.SignupScreen
 import com.example.dummyapp.ui.screens.auth.VerifyEmailScreen
 import com.example.dummyapp.ui.screens.MainScreen
 import com.example.dummyapp.ui.screens.profile_setup.ProfileSetupScreen
+import com.example.dummyapp.ui.screens.messages.ChatScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -24,6 +25,9 @@ sealed class Screen(val route: String) {
     object ProfileSetup : Screen("profile_setup")
     object ProfileDetail : Screen("profile_detail/{userId}?matchStatus={matchStatus}") {
         fun createRoute(userId: String, matchStatus: String = "none") = "profile_detail/$userId?matchStatus=$matchStatus"
+    }
+    object Chat : Screen("chat/{conversationId}") {
+        fun createRoute(conversationId: String) = "chat/$conversationId"
     }
 }
 
@@ -90,6 +94,7 @@ fun AppNavigation(
         }
         composable(Screen.Main.route) {
             MainScreen(
+                navController = navController,
                 onNavigateToProfileDetail = { userId, matchStatus ->
                     navController.navigate(Screen.ProfileDetail.createRoute(userId, matchStatus))
                 }
@@ -99,10 +104,7 @@ fun AppNavigation(
             route = Screen.ProfileDetail.route,
             arguments = listOf(
                 navArgument("userId") { type = NavType.StringType },
-                navArgument("matchStatus") { 
-                    type = NavType.StringType 
-                    defaultValue = "none"
-                }
+                navArgument("matchStatus") { type = NavType.StringType; defaultValue = "none" }
             )
         ) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
@@ -111,6 +113,18 @@ fun AppNavigation(
                 userId = userId,
                 matchStatus = matchStatus,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.Chat.route,
+            arguments = listOf(
+                navArgument("conversationId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val conversationId = backStackEntry.arguments?.getString("conversationId") ?: return@composable
+            ChatScreen(
+                navController = navController,
+                conversationId = conversationId
             )
         }
     }
