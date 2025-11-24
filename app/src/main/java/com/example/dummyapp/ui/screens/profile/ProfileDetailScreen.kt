@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.example.dummyapp.data.models.User
 import com.example.dummyapp.utils.NetworkResult
@@ -41,6 +43,7 @@ import com.example.dummyapp.viewmodel.ProfileDetailViewModel
 @Composable
 fun ProfileDetailScreen(
     userId: String,
+    matchStatus: String = "none", // sent, received, match, none
     onNavigateBack: () -> Unit,
     viewModel: ProfileDetailViewModel = hiltViewModel()
 ) {
@@ -49,6 +52,25 @@ fun ProfileDetailScreen(
     }
 
     val userState by viewModel.userState.collectAsState()
+    val actionState by viewModel.actionState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Handle action results
+    LaunchedEffect(actionState) {
+        actionState?.let { result ->
+            when (result) {
+                is NetworkResult.Success -> {
+                    onNavigateBack() // Go back on success
+                    viewModel.resetActionState()
+                }
+                is NetworkResult.Error -> {
+                    snackbarHostState.showSnackbar(result.message ?: "Action failed")
+                    viewModel.resetActionState()
+                }
+                else -> {}
+            }
+        }
+    }
 
     when (val result = userState) {
         is NetworkResult.Loading -> {
@@ -73,7 +95,16 @@ fun ProfileDetailScreen(
                 return
             }
             
-            ProfileDetailContent(user = user, onNavigateBack = onNavigateBack)
+            ProfileDetailContent(
+                user = user, 
+                matchStatus = matchStatus,
+                onNavigateBack = onNavigateBack,
+                onUndoSwipe = { viewModel.undoSwipe(userId) },
+                onAccept = { viewModel.acceptMatch(userId) },
+                onReject = { viewModel.rejectMatch(userId) },
+                onUnmatch = { viewModel.unmatchUser(userId) },
+                snackbarHostState = snackbarHostState
+            )
         }
     }
 }
@@ -82,9 +113,16 @@ fun ProfileDetailScreen(
 @Composable
 fun ProfileDetailContent(
     user: User,
-    onNavigateBack: () -> Unit
+    matchStatus: String,
+    onNavigateBack: () -> Unit,
+    onUndoSwipe: () -> Unit,
+    onAccept: () -> Unit,
+    onReject: () -> Unit,
+    onUnmatch: () -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(text = "") },
@@ -98,12 +136,23 @@ fun ProfileDetailContent(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = Color.Transparent,
+                    navigationIconContentColor = Color.White
                 )
             )
+        },
+        bottomBar = {
+            if (matchStatus != "none") {
+                BottomActionBar(
+                    matchStatus = matchStatus,
+                    onUndoSwipe = onUndoSwipe,
+                    onAccept = onAccept,
+                    onReject = onReject,
+                    onUnmatch = onUnmatch
+                )
+            }
         }
     ) { paddingValues ->
-        // ... existing content ...
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -115,9 +164,9 @@ fun ProfileDetailContent(
                     .fillMaxWidth()
                     .height(400.dp)
             ) {
-                val photoUrl = user.photos?.firstOrNull()?.url ?: "https://via.placeholder.com/400"
-                Image(
-                    painter = rememberAsyncImagePainter(photoUrl),
+                val photoUrl = user.photos?.firstOrNull { it.isPrimary }?.url ?: user.photos?.firstOrNull()?.url ?: "https://via.placeholder.com/400"
+                AsyncImage(
+                    model = photoUrl,
                     contentDescription = "Profile Picture",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -140,6 +189,7 @@ fun ProfileDetailContent(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(16.dp)
+                        .padding(bottom = 24.dp) // Add some padding for the overlap
                 ) {
                     Text(
                         text = "${user.name}, ${calculateAge(user.dob)}",
@@ -159,10 +209,11 @@ fun ProfileDetailContent(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = (-20).dp) // Overlap slightly
+                    .offset(y = (-24).dp) // Overlap slightly
                     .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(24.dp)
+                    .padding(bottom = paddingValues.calculateBottomPadding()) // Add padding for bottom bar
             ) {
                 // Bio Section
                 if (!user.bio.isNullOrBlank()) {
@@ -203,19 +254,59 @@ fun ProfileDetailContent(
                 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Interests
-                if (!user.interests.isNullOrEmpty()) {
+                // Personal Details
+                Text(
+                    text = "Personal Details",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                DetailRow("Religion", user.religion ?: "-")
+                DetailRow("Sect", user.sect ?: "-")
+                DetailRow("Marital Status", user.maritalStatus?.capitalize() ?: "-")
+                DetailRow("Diet", user.dietPreference?.capitalize() ?: "-")
+                DetailRow("Body Type", user.bodyType?.capitalize() ?: "-")
+                if (user.weight != null) {
+                    DetailRow("Weight", "${user.weight} kg")
+                }
+                DetailRow("Smoking", if (user.smoking == true) "Yes" else "No")
+                DetailRow("Drinking", if (user.drinking == true) "Yes" else "No")
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Family Details
+                Text(
+                    text = "Family",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                DetailRow("Family Background", user.familyBackground?.capitalize() ?: "-")
+                if (user.numberOfSiblings != null) {
+                    DetailRow("Siblings", "${user.numberOfSiblings}")
+                }
+                DetailRow("Living with Family", if (user.livingWithFamily == true) "Yes" else "No")
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Interests & Hobbies
+                val allInterests = (user.interests ?: emptyList()) + (user.hobbies ?: emptyList())
+                if (allInterests.isNotEmpty()) {
                     Text(
-                        text = "Interests",
+                        text = "Interests & Hobbies",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(12.dp))
+                    
                     FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        user.interests.forEach { interest ->
+                        allInterests.forEach { interest ->
                             SuggestionChip(
                                 onClick = { },
                                 label = { Text(interest) }
@@ -225,21 +316,63 @@ fun ProfileDetailContent(
                     Spacer(modifier = Modifier.height(24.dp))
                 }
                 
-                // More Details (Family, Habits etc)
-                Text(
-                    text = "More Details",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                DetailRow("Marital Status", user.maritalStatus?.capitalize() ?: "-")
-                DetailRow("Religion", user.religion ?: "-")
-                DetailRow("Sect", user.sect ?: "-")
-                DetailRow("Smoking", if (user.smoking == true) "Yes" else "No")
-                DetailRow("Drinking", if (user.drinking == true) "Yes" else "No")
-                
-                Spacer(modifier = Modifier.height(80.dp)) // Bottom padding for FABs if we add them
+                Spacer(modifier = Modifier.height(80.dp)) 
+            }
+        }
+    }
+}
+
+@Composable
+fun BottomActionBar(
+    matchStatus: String,
+    onUndoSwipe: () -> Unit,
+    onAccept: () -> Unit,
+    onReject: () -> Unit,
+    onUnmatch: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        when (matchStatus) {
+            "sent" -> {
+                Button(
+                    onClick = onUndoSwipe,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                ) {
+                    Text("Undo Request")
+                }
+            }
+            "received" -> {
+                Button(
+                    onClick = onReject,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Reject")
+                }
+                Button(
+                    onClick = onAccept,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
+                ) {
+                    Text("Accept")
+                }
+            }
+            "match" -> {
+                Button(
+                    onClick = onUnmatch,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Unmatch")
+                }
+                Button(
+                    onClick = { /* Navigate to chat */ },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Message")
+                }
             }
         }
     }
@@ -275,19 +408,20 @@ fun DetailRow(label: String, value: String) {
     }
 }
 
-// Helper function to calculate age (simplified)
-fun calculateAge(dob: String): String {
-    // In a real app, parse the date and calculate difference
-    // For now, just returning a placeholder or trying to parse year
+fun calculateAge(birthDate: String?): String {
+    if (birthDate.isNullOrEmpty()) return "?"
     return try {
-        val year = dob.take(4).toInt()
-        val currentYear = 2025
+        val year = birthDate.take(4).toInt()
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
         (currentYear - year).toString()
     } catch (e: Exception) {
-        "25" // Default
+        "?"
     }
 }
 
 fun String.capitalize(): String {
     return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
+
+
+

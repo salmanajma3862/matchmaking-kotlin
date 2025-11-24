@@ -33,7 +33,22 @@ data class MatchData(
 data class MatchItem(
     val matchId: String,
     val matchedAt: String,
-    val user: User,
+    val user: User?,
     val lastMessage: String?,
     val unreadCount: Int
 )
+
+data class SentSwipeItem(
+    val _id: String,
+    val target: User?,
+    val action: String,
+    val createdAt: String
+)
+
+data class ReceivedSwipeItem(
+    val _id: String,
+    val swiper: User?,
+    val action: String,
+    val createdAt: String
+)
+

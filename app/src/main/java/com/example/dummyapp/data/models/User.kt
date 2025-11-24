@@ -13,7 +13,7 @@ data class User(
     // Basic Profile
     val name: String,
     val gender: String, // "male" or "female"
-    val dob: String, // ISO date string
+    val dob: String? = null, // ISO date string
     val bio: String? = null,
     val height: Int? = null,
     val weight: Int? = null,

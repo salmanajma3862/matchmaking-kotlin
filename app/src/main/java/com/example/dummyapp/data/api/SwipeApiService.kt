@@ -3,6 +3,8 @@ package com.example.dummyapp.data.api
 import com.example.dummyapp.data.models.request.SwipeRequest
 import com.example.dummyapp.data.models.response.ApiResponse
 import com.example.dummyapp.data.models.response.MatchItem
+import com.example.dummyapp.data.models.response.ReceivedSwipeItem
+import com.example.dummyapp.data.models.response.SentSwipeItem
 import com.example.dummyapp.data.models.response.SwipeResponseData
 import com.example.dummyapp.utils.Constants
 import retrofit2.Response
@@ -23,4 +25,26 @@ interface SwipeApiService {
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20
     ): Response<ApiResponse<List<MatchItem>>>
+
+    @GET(Constants.Endpoints.GET_SENT_SWIPES)
+    suspend fun getSentSwipes(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<ApiResponse<List<SentSwipeItem>>>
+
+    @GET(Constants.Endpoints.GET_RECEIVED_SWIPES)
+    suspend fun getReceivedSwipes(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<ApiResponse<List<ReceivedSwipeItem>>>
+
+    @POST(Constants.Endpoints.UNDO_SWIPE)
+    suspend fun undoSwipe(
+        @Body request: Map<String, String>
+    ): Response<ApiResponse<Unit>>
+
+    @POST(Constants.Endpoints.UNMATCH)
+    suspend fun unmatchUser(
+        @Body request: Map<String, String>
+    ): Response<ApiResponse<Unit>>
 }

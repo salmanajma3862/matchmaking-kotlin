@@ -44,6 +44,10 @@ object Constants {
         const val SWIPE_BASE = "api/swipe"
         const val SWIPE_ACTION = "$SWIPE_BASE/"
         const val GET_MATCHES = "$SWIPE_BASE/matches"
+        const val GET_SENT_SWIPES = "$SWIPE_BASE/sent"
+        const val GET_RECEIVED_SWIPES = "$SWIPE_BASE/received"
+        const val UNDO_SWIPE = "$SWIPE_BASE/undo"
+        const val UNMATCH = "$SWIPE_BASE/unmatch"
         
         // Message endpoints (to be added)
         const val MESSAGE_BASE = "api/messages"

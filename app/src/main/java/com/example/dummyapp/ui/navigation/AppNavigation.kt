@@ -3,9 +3,11 @@ package com.example.dummyapp.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.dummyapp.ui.screens.auth.LoginScreen
 import com.example.dummyapp.ui.screens.auth.SignupScreen
 import com.example.dummyapp.ui.screens.auth.VerifyEmailScreen
@@ -20,8 +22,8 @@ sealed class Screen(val route: String) {
         fun createRoute(email: String) = "verify_email/$email"
     }
     object ProfileSetup : Screen("profile_setup")
-    object ProfileDetail : Screen("profile_detail/{userId}") {
-        fun createRoute(userId: String) = "profile_detail/$userId"
+    object ProfileDetail : Screen("profile_detail/{userId}?matchStatus={matchStatus}") {
+        fun createRoute(userId: String, matchStatus: String = "none") = "profile_detail/$userId?matchStatus=$matchStatus"
     }
 }
 
@@ -88,15 +90,26 @@ fun AppNavigation(
         }
         composable(Screen.Main.route) {
             MainScreen(
-                onNavigateToProfileDetail = { userId ->
-                    navController.navigate(Screen.ProfileDetail.createRoute(userId))
+                onNavigateToProfileDetail = { userId, matchStatus ->
+                    navController.navigate(Screen.ProfileDetail.createRoute(userId, matchStatus))
                 }
             )
         }
-        composable(Screen.ProfileDetail.route) { backStackEntry ->
+        composable(
+            route = Screen.ProfileDetail.route,
+            arguments = listOf(
+                navArgument("userId") { type = NavType.StringType },
+                navArgument("matchStatus") { 
+                    type = NavType.StringType 
+                    defaultValue = "none"
+                }
+            )
+        ) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            val matchStatus = backStackEntry.arguments?.getString("matchStatus") ?: "none"
             com.example.dummyapp.ui.screens.profile.ProfileDetailScreen(
                 userId = userId,
+                matchStatus = matchStatus,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

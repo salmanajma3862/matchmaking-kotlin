@@ -20,7 +20,7 @@ import com.example.dummyapp.ui.screens.matches.MatchScreen
 
 @Composable
 fun MainScreen(
-    onNavigateToProfileDetail: (String) -> Unit
+    onNavigateToProfileDetail: (String, String) -> Unit
 ) {
     var selectedItem by remember { mutableIntStateOf(0) }
     val items = listOf("Feed", "Matches")
@@ -42,9 +42,9 @@ fun MainScreen(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             if (selectedItem == 0) {
-                FeedScreen(onNavigateToProfileDetail = onNavigateToProfileDetail)
+                FeedScreen(onNavigateToProfileDetail = { userId -> onNavigateToProfileDetail(userId, "none") })
             } else {
-                MatchScreen()
+                MatchScreen(onNavigateToProfileDetail = onNavigateToProfileDetail)
             }
         }
     }
