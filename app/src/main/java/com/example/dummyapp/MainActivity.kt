@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.example.dummyapp.context.AuthContextProvider
 import com.example.dummyapp.context.ChatProvider
@@ -40,8 +42,29 @@ class MainActivity : ComponentActivity() {
                     userPreferences = userPreferences
                 ) {
                     ChatProvider(chatRepository = chatRepository) {
-                        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                            AppNavigation(modifier = Modifier.padding(innerPadding))
+                        val authContext = com.example.dummyapp.context.LocalAuthContext.current
+                        val authState by authContext.authState.collectAsState()
+
+                        if (authState.isLoading) {
+                            androidx.compose.foundation.layout.Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = androidx.compose.ui.Alignment.Center
+                            ) {
+                                androidx.compose.material3.CircularProgressIndicator()
+                            }
+                        } else {
+                            val startDestination = if (authState.isAuthenticated) {
+                                com.example.dummyapp.ui.navigation.Screen.Main.route
+                            } else {
+                                com.example.dummyapp.ui.navigation.Screen.Login.route
+                            }
+
+                            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                                AppNavigation(
+                                    modifier = Modifier.padding(innerPadding),
+                                    startDestination = startDestination
+                                )
+                            }
                         }
                     }
                 }

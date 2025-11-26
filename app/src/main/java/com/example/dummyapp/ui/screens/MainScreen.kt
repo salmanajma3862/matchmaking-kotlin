@@ -48,7 +48,10 @@ fun MainScreen(
             when (selectedItem) {
                 0 -> FeedScreen(onNavigateToProfileDetail = { userId -> onNavigateToProfileDetail(userId, "none") })
                 1 -> MatchScreen(onNavigateToProfileDetail = onNavigateToProfileDetail)
-                2 -> ConversationListScreen(navController = navController)
+                2 -> ConversationListScreen(
+                    navController = navController,
+                    onNavigateToMatches = { selectedItem = 1 }
+                )
             }
         }
     }

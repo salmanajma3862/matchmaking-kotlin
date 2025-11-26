@@ -1,6 +1,7 @@
 package com.example.dummyapp.ui.components.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -31,6 +32,7 @@ fun ConversationItem(
     // Find the other participant
     val otherUser = conversation.participants.find { it.id != currentUserId } ?: return
     val unreadCount = conversation.unreadCount[currentUserId] ?: 0
+    val isUnread = unreadCount > 0
 
     Row(
         modifier = Modifier
@@ -39,72 +41,63 @@ fun ConversationItem(
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Avatar
-        AsyncImage(
-            model = otherUser.photos?.firstOrNull()?.url ?: "https://via.placeholder.com/150",
-            contentDescription = "Avatar",
-            modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(Color.Gray),
-            contentScale = ContentScale.Crop
-        )
+        // Avatar with Unread Indicator
+        Box(modifier = Modifier.wrapContentSize()) {
+            AsyncImage(
+                model = otherUser.photos?.firstOrNull()?.url ?: "https://via.placeholder.com/150",
+                contentDescription = "Avatar",
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(Color.Gray),
+                contentScale = ContentScale.Crop
+            )
+            
+            if (isUnread) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .align(Alignment.BottomEnd)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                        .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape)
+                )
+            }
+        }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = otherUser.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                conversation.lastMessageAt?.let {
-                    Text(
-                        text = formatTime(it),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = conversation.lastMessageText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (unreadCount > 0) MaterialTheme.colorScheme.onSurface else Color.Gray,
-                    fontWeight = if (unreadCount > 0) FontWeight.Bold else FontWeight.Normal,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
+                    text = otherUser.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = if (isUnread) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isUnread) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
-                if (unreadCount > 0) {
-                    Box(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .padding(horizontal = 8.dp, vertical = 2.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = unreadCount.toString(),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                conversation.lastMessageAt?.let {
+                    Text(
+                        text = formatTime(it),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            Text(
+                text = conversation.lastMessageText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (isUnread) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = if (isUnread) FontWeight.SemiBold else FontWeight.Normal,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
