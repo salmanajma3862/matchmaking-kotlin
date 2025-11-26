@@ -63,7 +63,7 @@ class AuthRepository @Inject constructor(
                         userId = user.id,
                         email = user.email ?: "",
                         name = user.name,
-                        phone = user.phone,
+                        phone = user.phone ?: "",
                         isEmailVerified = user.isEmailVerified,
                         isProfileComplete = user.photos?.isNotEmpty() ?: false
                     )
@@ -110,7 +110,7 @@ class AuthRepository @Inject constructor(
                         userId = user.id,
                         email = user.email ?: "",
                         name = user.name,
-                        phone = user.phone,
+                        phone = user.phone ?: "",
                         isEmailVerified = user.isEmailVerified,
                         isProfileComplete = user.photos?.isNotEmpty() ?: false
                     )
@@ -176,7 +176,7 @@ class AuthRepository @Inject constructor(
                             userId = user.id,
                             email = user.email ?: "",
                             name = user.name,
-                            phone = user.phone,
+                            phone = user.phone ?: "",
                             isEmailVerified = true,
                             isProfileComplete = user.photos?.isNotEmpty() ?: false
                         )

@@ -122,7 +122,10 @@ class ChatContextManager(
                 replyTo = replyTo
             )
             // Optimistic update could be done here
-            chatRepository.sendMessage(request)
+            val result = chatRepository.sendMessage(request)
+            result.onSuccess { message ->
+                handleNewMessage(message)
+            }
         }
     }
 
@@ -158,9 +161,12 @@ class ChatContextManager(
         
         // If message belongs to current conversation, add it
         if (message.conversationId == _chatState.value.currentConversation?.id) {
-            currentMessages.add(message)
-            _chatState.value = _chatState.value.copy(messages = currentMessages)
-            markAsRead(message.conversationId)
+            // Check for duplicates
+            if (currentMessages.none { it.id == message.id }) {
+                currentMessages.add(message)
+                _chatState.value = _chatState.value.copy(messages = currentMessages)
+                markAsRead(message.conversationId)
+            }
         }
 
         // Update conversation list (last message)
