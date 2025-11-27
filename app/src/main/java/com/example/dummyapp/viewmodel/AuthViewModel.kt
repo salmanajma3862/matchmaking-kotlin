@@ -122,4 +122,16 @@ class AuthViewModel @Inject constructor(
     fun clearForgotPasswordState() {
         _forgotPasswordState.value = null
     }
+
+    /**
+     * Perform logout
+     */
+    fun performLogout() {
+        viewModelScope.launch {
+            authRepository.logout().collect {
+                // Logout successful (or at least local data cleared)
+                // State update in AuthContext (observing userPreferences) should trigger navigation
+            }
+        }
+    }
 }

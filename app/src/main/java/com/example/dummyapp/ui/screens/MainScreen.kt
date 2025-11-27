@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -29,8 +30,8 @@ fun MainScreen(
     onNavigateToProfileDetail: (String, String) -> Unit
 ) {
     var selectedItem by remember { mutableIntStateOf(0) }
-    val items = listOf("Feed", "Likes", "Matches", "Messages")
-    val icons = listOf(Icons.Filled.Home, Icons.Filled.Favorite, Icons.Filled.Star, Icons.Filled.Message)
+    val items = listOf("Feed", "Likes", "Matches", "Messages", "Profile")
+    val icons = listOf(Icons.Filled.Home, Icons.Filled.Favorite, Icons.Filled.Star, Icons.Filled.Message, Icons.Filled.Person)
 
     Scaffold(
         bottomBar = {
@@ -54,6 +55,12 @@ fun MainScreen(
                 3 -> ConversationListScreen(
                     navController = navController,
                     onNavigateToMatches = { selectedItem = 2 }
+                )
+                4 -> com.example.dummyapp.ui.screens.profile.ProfileScreen(
+                    onLogout = {
+                        // Navigation back to login is handled by AuthContext in MainActivity
+                        // But we can also explicitly pop back stack if needed, though state change should trigger it
+                    }
                 )
             }
         }

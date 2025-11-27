@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Favorite
@@ -38,16 +38,20 @@ fun SentTab(viewModel: MatchViewModel, onNavigateToProfileDetail: (String, Strin
             if (swipes.isNullOrEmpty()) {
                 EmptyView("No sent likes yet.")
             } else {
-                LazyColumn(
+                androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                    columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     items(swipes) { swipe ->
                         swipe.target?.let { user ->
-                            UserCard(
+                            MatchProfileCard(
                                 user = user,
-                                subtitle = "Sent: ${formatDate(swipe.createdAt)}",
-                                onClick = { onNavigateToProfileDetail(user.id, "sent") }
+                                isNew = false,
+                                onMessage = { onNavigateToProfileDetail(user.id, "sent") },
+                                onViewProfile = { onNavigateToProfileDetail(user.id, "sent") }
                             )
                         }
                     }
@@ -69,16 +73,20 @@ fun ReceivedTab(viewModel: MatchViewModel, onNavigateToProfileDetail: (String, S
             if (swipes.isNullOrEmpty()) {
                 EmptyView("No received likes yet.")
             } else {
-                LazyColumn(
+                androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                    columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     items(swipes) { swipe ->
                         swipe.swiper?.let { user ->
-                            UserCard(
+                            MatchProfileCard(
                                 user = user,
-                                subtitle = "Received: ${formatDate(swipe.createdAt)}",
-                                onClick = { onNavigateToProfileDetail(user.id, "received") }
+                                isNew = false,
+                                onMessage = { onNavigateToProfileDetail(user.id, "received") },
+                                onViewProfile = { onNavigateToProfileDetail(user.id, "received") }
                             )
                         }
                     }
