@@ -77,7 +77,11 @@ data class User(
     // Computed fields
     val age: Int? = null,
     val matchPercentage: Int? = null,
-    val distance: Double? = null
+    val distance: Double? = null,
+    
+    // Stats
+    val totalMatches: Int? = 0,
+    val profileViews: Int? = 0
 )
 
 /**

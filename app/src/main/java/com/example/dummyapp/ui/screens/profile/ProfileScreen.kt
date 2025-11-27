@@ -144,8 +144,8 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.spacedBy(32.dp),
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    StatItem(count = "24", label = "Matches")
-                    StatItem(count = "156", label = "Profile Views")
+                    StatItem(count = "${user?.totalMatches ?: 0}", label = "Matches")
+                    StatItem(count = "${user?.profileViews ?: 0}", label = "Profile Views")
                     StatItem(count = "85%", label = "Complete")
                 }
             }
