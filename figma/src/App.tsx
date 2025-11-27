@@ -5,6 +5,10 @@ import { ConversationItem } from './components/ConversationItem';
 import { MessageThread } from './components/MessageThread';
 import { MatchScreen } from './components/MatchScreen';
 import { ProfileDetailScreen } from './components/ProfileDetailScreen';
+import { ProfileScreen } from './components/ProfileScreen';
+import { SettingsScreen } from './components/SettingsScreen';
+import { NotificationsScreen } from './components/NotificationsScreen';
+import { EditProfileScreen } from './components/EditProfileScreen';
 
 interface Match {
   id: string;
@@ -65,6 +69,11 @@ export default function App() {
   const [showMatchScreen, setShowMatchScreen] = useState(false);
   const [showProfileDetailScreen, setShowProfileDetailScreen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [showProfileScreen, setShowProfileScreen] = useState(false);
+  const [showSettingsScreen, setShowSettingsScreen] = useState(false);
+  const [showNotificationsScreen, setShowNotificationsScreen] = useState(false);
+  const [viewingOwnProfile, setViewingOwnProfile] = useState(false);
+  const [showEditProfileScreen, setShowEditProfileScreen] = useState(false);
   
   const matches: Match[] = [
     {
@@ -579,6 +588,208 @@ export default function App() {
     setShowProfileDetailScreen(true);
   };
 
+  // Current user data (mock data for own profile)
+  const currentUser = {
+    id: 'current-user',
+    name: 'John',
+    age: 29,
+    image: 'https://images.unsplash.com/photo-1532272278764-53cd1fe53f72?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMHBob3RvZ3JhcGh5fGVufDF8fHx8MTc2NDI0ODIxMXww&ixlib=rb-4.1.0&q=80&w=1080',
+    city: 'New York',
+    country: 'USA',
+    profileCompletion: 85,
+    matchCount: 24,
+    viewCount: 156,
+    gender: 'Male',
+    bio: 'Love traveling, hiking, and good food. Looking for someone to share adventures with.',
+    height: 5.11,
+    bodyType: 'Athletic',
+    religion: 'Christianity',
+    maritalStatus: 'Single',
+    education: 'Master\'s in Computer Science',
+    profession: 'Software Engineer',
+    incomeRange: '$80,000 - $100,000',
+    photos: [
+      { url: 'https://images.unsplash.com/photo-1532272278764-53cd1fe53f72?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMHBob3RvZ3JhcGh5fGVufDF8fHx8MTc2NDI0ODIxMXww&ixlib=rb-4.1.0&q=80&w=1080', isPrimary: true },
+    ],
+    interests: ['Travel', 'Hiking', 'Photography', 'Cooking'],
+    hobbies: ['Reading', 'Gym', 'Cycling'],
+    smoking: false,
+    drinking: false,
+    dietPreference: 'Non-vegetarian',
+    familyBackground: 'Middle-class family',
+    numberOfSiblings: 1,
+    livingWithFamily: false,
+    intention: 'marriage',
+    readyForMarriageTimeframe: '1_year',
+    isVerified: true,
+  };
+
+  // Show edit profile screen
+  if (showEditProfileScreen) {
+    return (
+      <EditProfileScreen
+        profile={{
+          name: currentUser.name,
+          age: currentUser.age,
+          image: currentUser.image,
+          bio: currentUser.bio,
+          city: currentUser.city,
+          country: currentUser.country,
+          profession: currentUser.profession,
+          education: currentUser.education,
+          height: currentUser.height,
+          bodyType: currentUser.bodyType,
+          religion: currentUser.religion,
+          maritalStatus: currentUser.maritalStatus,
+          photos: currentUser.photos,
+          interests: currentUser.interests,
+          hobbies: currentUser.hobbies,
+          smoking: currentUser.smoking,
+          drinking: currentUser.drinking,
+          dietPreference: currentUser.dietPreference,
+          intention: currentUser.intention,
+        }}
+        onBack={() => {
+          setShowEditProfileScreen(false);
+          setShowProfileScreen(true);
+        }}
+        onSave={(updatedProfile) => {
+          console.log('Profile updated:', updatedProfile);
+          // Here you would normally update the user profile
+          setShowEditProfileScreen(false);
+          setShowProfileScreen(true);
+        }}
+      />
+    );
+  }
+
+  // Show notifications screen
+  if (showNotificationsScreen) {
+    return (
+      <NotificationsScreen
+        onBack={() => {
+          setShowNotificationsScreen(false);
+          setShowProfileScreen(true);
+        }}
+      />
+    );
+  }
+
+  // Show settings screen
+  if (showSettingsScreen) {
+    return (
+      <SettingsScreen
+        onBack={() => {
+          setShowSettingsScreen(false);
+          setShowProfileScreen(true);
+        }}
+      />
+    );
+  }
+
+  // Show own profile view
+  if (viewingOwnProfile) {
+    return (
+      <ProfileDetailScreen
+        profile={{
+          id: currentUser.id,
+          name: currentUser.name,
+          age: currentUser.age,
+          gender: currentUser.gender,
+          bio: currentUser.bio,
+          height: currentUser.height,
+          weight: undefined,
+          bodyType: currentUser.bodyType,
+          city: currentUser.city,
+          country: currentUser.country,
+          religion: currentUser.religion,
+          sect: undefined,
+          maritalStatus: currentUser.maritalStatus,
+          education: currentUser.education,
+          profession: currentUser.profession,
+          incomeRange: currentUser.incomeRange,
+          photos: currentUser.photos,
+          interests: currentUser.interests,
+          hobbies: currentUser.hobbies,
+          smoking: currentUser.smoking,
+          drinking: currentUser.drinking,
+          dietPreference: currentUser.dietPreference,
+          familyBackground: currentUser.familyBackground,
+          numberOfSiblings: currentUser.numberOfSiblings,
+          livingWithFamily: currentUser.livingWithFamily,
+          intention: currentUser.intention,
+          readyForMarriageTimeframe: currentUser.readyForMarriageTimeframe,
+          isVerified: currentUser.isVerified,
+        }}
+        onBack={() => {
+          setViewingOwnProfile(false);
+          setShowProfileScreen(true);
+        }}
+        onMessage={() => {}}
+      />
+    );
+  }
+
+  // Show profile screen
+  if (showProfileScreen) {
+    return (
+      <div className="h-screen bg-white">
+        <ProfileScreen
+          user={{
+            name: currentUser.name,
+            age: currentUser.age,
+            image: currentUser.image,
+            city: currentUser.city,
+            profileCompletion: currentUser.profileCompletion,
+            matchCount: currentUser.matchCount,
+            viewCount: currentUser.viewCount,
+          }}
+          onViewProfile={() => setViewingOwnProfile(true)}
+          onEditProfile={() => setShowEditProfileScreen(true)}
+          onSettings={() => setShowSettingsScreen(true)}
+          onNotifications={() => setShowNotificationsScreen(true)}
+          onPrivacy={() => {
+            // Navigate to privacy settings
+            console.log('Privacy settings');
+          }}
+          onSubscription={() => {
+            // Navigate to subscription
+            console.log('Subscription');
+          }}
+          onHelp={() => {
+            // Navigate to help
+            console.log('Help');
+          }}
+          onAbout={() => {
+            // Navigate to about
+            console.log('About');
+          }}
+          onLogout={() => {
+            // Handle logout
+            console.log('Logout');
+          }}
+        />
+        {/* Bottom Navigation */}
+        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 px-6 py-4 bg-white">
+          <div className="flex items-center justify-around">
+            <button className="p-3 text-gray-400 hover:text-pink-500 transition-colors">
+              <Heart className="w-6 h-6" />
+            </button>
+            <button 
+              onClick={() => setShowProfileScreen(false)}
+              className="p-3 text-gray-400 hover:text-pink-500 transition-colors"
+            >
+              <MessageCircle className="w-6 h-6" />
+            </button>
+            <button className="p-3 text-pink-500 transition-colors">
+              <User className="w-6 h-6 fill-pink-500" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Show profile detail screen
   if (showProfileDetailScreen && selectedMatch) {
     return (
@@ -718,7 +929,10 @@ export default function App() {
           <button className="p-3 text-pink-500 transition-colors">
             <MessageCircle className="w-6 h-6 fill-pink-500" />
           </button>
-          <button className="p-3 text-gray-400 hover:text-pink-500 transition-colors">
+          <button 
+            onClick={() => setShowProfileScreen(true)}
+            className="p-3 text-gray-400 hover:text-pink-500 transition-colors"
+          >
             <User className="w-6 h-6" />
           </button>
         </div>
