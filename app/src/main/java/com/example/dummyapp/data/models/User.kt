@@ -45,6 +45,11 @@ data class User(
     val familyBackground: String? = null,
     val numberOfSiblings: Int? = null,
     val livingWithFamily: Boolean? = false,
+
+    // Looking For
+    val intention: String? = null,
+    val readyForMarriageTimeframe: String? = null,
+
     
     // Auth & Account
     val phone: String? = null,
