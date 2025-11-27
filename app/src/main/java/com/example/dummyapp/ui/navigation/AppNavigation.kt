@@ -29,6 +29,13 @@ sealed class Screen(val route: String) {
     object Chat : Screen("chat/{conversationId}") {
         fun createRoute(conversationId: String) = "chat/$conversationId"
     }
+    object Settings : Screen("settings")
+    object EditProfile : Screen("edit_profile")
+    object Notifications : Screen("notifications")
+    object Privacy : Screen("privacy")
+    object Subscription : Screen("subscription")
+    object Help : Screen("help")
+    object About : Screen("about")
 }
 
 @Composable
@@ -130,5 +137,12 @@ fun AppNavigation(
                 conversationId = conversationId
             )
         }
+        composable(Screen.Settings.route) { com.example.dummyapp.ui.screens.profile.SettingsScreen() }
+        composable(Screen.EditProfile.route) { com.example.dummyapp.ui.screens.profile.EditProfileScreen() }
+        composable(Screen.Notifications.route) { com.example.dummyapp.ui.screens.profile.NotificationsScreen() }
+        composable(Screen.Privacy.route) { com.example.dummyapp.ui.screens.profile.PrivacyScreen() }
+        composable(Screen.Subscription.route) { com.example.dummyapp.ui.screens.profile.SubscriptionScreen() }
+        composable(Screen.Help.route) { com.example.dummyapp.ui.screens.profile.HelpScreen() }
+        composable(Screen.About.route) { com.example.dummyapp.ui.screens.profile.AboutScreen() }
     }
 }

@@ -36,6 +36,25 @@ class AuthViewModel @Inject constructor(
     // Forgot Password State
     private val _forgotPasswordState = MutableStateFlow<NetworkResult<Boolean>?>(null)
     val forgotPasswordState: StateFlow<NetworkResult<Boolean>?> = _forgotPasswordState.asStateFlow()
+
+    // Current User State
+    private val _currentUserState = MutableStateFlow<NetworkResult<User>?>(null)
+    val currentUserState: StateFlow<NetworkResult<User>?> = _currentUserState.asStateFlow()
+    
+    init {
+        fetchCurrentUser()
+    }
+
+    /**
+     * Fetch current user
+     */
+    fun fetchCurrentUser() {
+        viewModelScope.launch {
+            authRepository.getCurrentUser().collect { result ->
+                _currentUserState.value = result
+            }
+        }
+    }
     
     /**
      * Login user

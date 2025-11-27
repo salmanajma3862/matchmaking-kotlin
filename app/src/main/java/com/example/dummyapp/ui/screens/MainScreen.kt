@@ -57,9 +57,16 @@ fun MainScreen(
                     onNavigateToMatches = { selectedItem = 2 }
                 )
                 4 -> com.example.dummyapp.ui.screens.profile.ProfileScreen(
+                    onViewProfile = { /* TODO: Navigate to own profile detail */ },
+                    onEditProfile = { navController.navigate(com.example.dummyapp.ui.navigation.Screen.EditProfile.route) },
+                    onSettings = { navController.navigate(com.example.dummyapp.ui.navigation.Screen.Settings.route) },
+                    onNotifications = { navController.navigate(com.example.dummyapp.ui.navigation.Screen.Notifications.route) },
+                    onPrivacy = { navController.navigate(com.example.dummyapp.ui.navigation.Screen.Privacy.route) },
+                    onSubscription = { navController.navigate(com.example.dummyapp.ui.navigation.Screen.Subscription.route) },
+                    onHelp = { navController.navigate(com.example.dummyapp.ui.navigation.Screen.Help.route) },
+                    onAbout = { navController.navigate(com.example.dummyapp.ui.navigation.Screen.About.route) },
                     onLogout = {
                         // Navigation back to login is handled by AuthContext in MainActivity
-                        // But we can also explicitly pop back stack if needed, though state change should trigger it
                     }
                 )
             }
