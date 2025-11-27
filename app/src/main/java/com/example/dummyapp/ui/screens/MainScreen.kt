@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.example.dummyapp.ui.screens.matches.LikesScreen
 import com.example.dummyapp.ui.screens.matches.MatchScreen
 import com.example.dummyapp.ui.screens.messages.ConversationListScreen
 
@@ -27,8 +29,8 @@ fun MainScreen(
     onNavigateToProfileDetail: (String, String) -> Unit
 ) {
     var selectedItem by remember { mutableIntStateOf(0) }
-    val items = listOf("Feed", "Matches", "Messages")
-    val icons = listOf(Icons.Filled.Home, Icons.Filled.Favorite, Icons.Filled.Message)
+    val items = listOf("Feed", "Likes", "Matches", "Messages")
+    val icons = listOf(Icons.Filled.Home, Icons.Filled.Favorite, Icons.Filled.Star, Icons.Filled.Message)
 
     Scaffold(
         bottomBar = {
@@ -47,10 +49,11 @@ fun MainScreen(
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedItem) {
                 0 -> FeedScreen(onNavigateToProfileDetail = { userId -> onNavigateToProfileDetail(userId, "none") })
-                1 -> MatchScreen(onNavigateToProfileDetail = onNavigateToProfileDetail)
-                2 -> ConversationListScreen(
+                1 -> LikesScreen(onNavigateToProfileDetail = onNavigateToProfileDetail)
+                2 -> MatchScreen(onNavigateToProfileDetail = onNavigateToProfileDetail)
+                3 -> ConversationListScreen(
                     navController = navController,
-                    onNavigateToMatches = { selectedItem = 1 }
+                    onNavigateToMatches = { selectedItem = 2 }
                 )
             }
         }
