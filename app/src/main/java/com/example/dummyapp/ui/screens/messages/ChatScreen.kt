@@ -1,6 +1,7 @@
 package com.example.dummyapp.ui.screens.messages
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +20,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.dummyapp.context.LocalAuthContext
@@ -56,6 +59,7 @@ fun ChatScreen(
     
     val listState = rememberLazyListState()
     val context = LocalContext.current
+    var selectedImage by remember { mutableStateOf<String?>(null) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -171,10 +175,34 @@ fun ChatScreen(
                         MessageBubble(
                             message = message,
                             isMe = message.sender.id == currentUserId,
-                            avatarUrl = if (message.sender.id == currentUserId) null else otherUserAvatar
+                            avatarUrl = if (message.sender.id == currentUserId) null else otherUserAvatar,
+                            onImageClick = { url -> selectedImage = url }
                         )
                     }
                 }
+            }
+        }
+    }
+
+
+    if (selectedImage != null) {
+        Dialog(
+            onDismissRequest = { selectedImage = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .clickable { selectedImage = null },
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = selectedImage,
+                    contentDescription = "Full screen image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
             }
         }
     }

@@ -1,9 +1,13 @@
 package com.example.dummyapp.ui.components.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +27,8 @@ import java.util.*
 fun MessageBubble(
     message: Message,
     isMe: Boolean,
-    avatarUrl: String? = null
+    avatarUrl: String? = null,
+    onImageClick: (String) -> Unit = {}
 ) {
     val bubbleColor = if (isMe) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
     val textColor = if (isMe) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -68,15 +73,26 @@ fun MessageBubble(
                     )
                 } else {
                 if (message.media?.imageUrl != null) {
-                    AsyncImage(
-                        model = message.media.imageUrl,
-                        contentDescription = "Sent image",
+                    // Photo Placeholder
+                    Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 200.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+                            .clickable { onImageClick(message.media.imageUrl) }
+                            .padding(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Image,
+                            contentDescription = "Photo",
+                            tint = textColor
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Photo",
+                            color = textColor,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    
                     if (message.text.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
