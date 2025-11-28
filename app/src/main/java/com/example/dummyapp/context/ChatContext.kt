@@ -11,6 +11,7 @@ import com.example.dummyapp.data.models.Conversation
 import com.example.dummyapp.data.models.Message
 import com.example.dummyapp.data.models.request.SendMessageRequest
 import com.example.dummyapp.data.repository.ChatRepository
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -125,6 +126,37 @@ class ChatContextManager(
             val result = chatRepository.sendMessage(request)
             result.onSuccess { message ->
                 handleNewMessage(message)
+            }
+        }
+    }
+
+    fun sendPhotoMessage(conversationId: String, imageUri: android.net.Uri, context: android.content.Context) {
+        scope.launch {
+            try {
+                val contentResolver = context.contentResolver
+                val inputStream = contentResolver.openInputStream(imageUri)
+                val type = contentResolver.getType(imageUri) ?: "image/jpeg"
+                val file = java.io.File(context.cacheDir, "temp_image_${System.currentTimeMillis()}")
+                
+                inputStream?.use { input ->
+                    file.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                val requestFile = okhttp3.RequestBody.create(type.toMediaTypeOrNull(), file)
+                val body = okhttp3.MultipartBody.Part.createFormData("image", file.name, requestFile)
+                val conversationIdBody = okhttp3.RequestBody.create("text/plain".toMediaTypeOrNull(), conversationId)
+                val textBody = okhttp3.RequestBody.create("text/plain".toMediaTypeOrNull(), "")
+                val messageTypeBody = okhttp3.RequestBody.create("text/plain".toMediaTypeOrNull(), "image")
+
+                val result = chatRepository.sendPhotoMessage(body, conversationIdBody, textBody, messageTypeBody)
+                result.onSuccess { message ->
+                    handleNewMessage(message)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Handle error
             }
         }
     }

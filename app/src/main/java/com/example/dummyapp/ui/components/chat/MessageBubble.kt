@@ -67,10 +67,29 @@ fun MessageBubble(
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                     )
                 } else {
+                if (message.media?.imageUrl != null) {
+                    AsyncImage(
+                        model = message.media.imageUrl,
+                        contentDescription = "Sent image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 200.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    if (message.text.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = message.text,
+                            color = textColor
+                        )
+                    }
+                } else {
                     Text(
                         text = message.text,
                         color = textColor
                     )
+                }
                 }
                 
                 Spacer(modifier = Modifier.height(4.dp))

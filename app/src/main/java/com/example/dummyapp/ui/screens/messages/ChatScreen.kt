@@ -25,8 +25,12 @@ import com.example.dummyapp.context.LocalAuthContext
 import com.example.dummyapp.context.LocalChatContext
 import com.example.dummyapp.ui.components.chat.ChatInput
 import com.example.dummyapp.ui.components.chat.MessageBubble
+import com.example.dummyapp.ui.components.chat.MessageBubble
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +55,15 @@ fun ChatScreen(
     val lastActive = otherUser?.lastSeen
     
     val listState = rememberLazyListState()
+    val context = LocalContext.current
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        uri?.let {
+            chatContext.sendPhotoMessage(conversationId, it, context)
+        }
+    }
 
     LaunchedEffect(conversationId) {
         if (chatState.currentConversation?.id != conversationId) {
@@ -133,6 +146,9 @@ fun ChatScreen(
                 onTyping = { isTyping ->
                     if (isTyping) chatContext.startTyping(conversationId)
                     else chatContext.stopTyping(conversationId)
+                },
+                onImageSelected = {
+                    imagePickerLauncher.launch("image/*")
                 }
             )
         }

@@ -8,6 +8,8 @@ import com.example.dummyapp.data.models.request.EditMessageRequest
 import com.example.dummyapp.data.models.request.MarkReadRequest
 import com.example.dummyapp.data.models.request.SendMessageRequest
 import com.example.dummyapp.service.SocketManager
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -66,6 +68,24 @@ class ChatRepository @Inject constructor(
                 Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("Error sending message: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun sendPhotoMessage(
+        imagePart: MultipartBody.Part,
+        conversationId: RequestBody,
+        text: RequestBody,
+        messageType: RequestBody
+    ): Result<Message> {
+        return try {
+            val response = apiService.sendPhotoMessage(imagePart, conversationId, text, messageType)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error sending photo message: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

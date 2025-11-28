@@ -3,6 +3,7 @@ package com.example.dummyapp.ui.components.chat
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,7 +15,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ChatInput(
     onSendMessage: (String) -> Unit,
-    onTyping: (Boolean) -> Unit
+    onTyping: (Boolean) -> Unit,
+    onImageSelected: () -> Unit
 ) {
     var text by remember { mutableStateOf("") }
 
@@ -24,6 +26,10 @@ fun ChatInput(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        IconButton(onClick = onImageSelected) {
+            Icon(Icons.Default.Add, contentDescription = "Add Image", tint = MaterialTheme.colorScheme.primary)
+        }
+
         TextField(
             value = text,
             onValueChange = { 

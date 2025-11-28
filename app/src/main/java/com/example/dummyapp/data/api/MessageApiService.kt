@@ -8,6 +8,8 @@ import com.example.dummyapp.data.models.request.MarkReadRequest
 import com.example.dummyapp.data.models.request.SendMessageRequest
 import com.example.dummyapp.data.models.response.ApiResponse
 import com.example.dummyapp.utils.Constants
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -26,6 +28,15 @@ interface MessageApiService {
     @POST("api/chat/send")
     suspend fun sendMessage(
         @Body request: SendMessageRequest
+    ): Response<Message>
+
+    @Multipart
+    @POST("api/chat/send")
+    suspend fun sendPhotoMessage(
+        @Part image: MultipartBody.Part,
+        @Part("conversationId") conversationId: RequestBody,
+        @Part("text") text: RequestBody,
+        @Part("messageType") messageType: RequestBody
     ): Response<Message>
 
     @POST("api/chat/conversation")
