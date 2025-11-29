@@ -14,7 +14,8 @@ data class Message(
     val isEdited: Boolean = false,
     val isDeletedForEveryone: Boolean = false,
     val createdAt: String, // ISO Date string
-    val updatedAt: String
+    val updatedAt: String,
+    @Transient val isSending: Boolean = false
 )
 
 data class Media(

@@ -115,17 +115,43 @@ class ChatContextManager(
         }
     }
 
-    fun sendMessage(conversationId: String, text: String, replyTo: String? = null) {
+    fun sendMessage(conversationId: String, text: String, currentUser: com.example.dummyapp.data.models.User, replyTo: String? = null) {
         scope.launch {
+            // Optimistic Update
+            val tempId = "temp_${System.currentTimeMillis()}"
+            val tempMessage = Message(
+                id = tempId,
+                conversationId = conversationId,
+                sender = currentUser,
+                text = text,
+                createdAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).apply { timeZone = java.util.TimeZone.getTimeZone("UTC") }.format(java.util.Date()),
+                updatedAt = "",
+                replyTo = _chatState.value.messages.find { it.id == replyTo }, // Try to find reply message locally
+                isSending = true
+            )
+            handleNewMessage(tempMessage)
+
             val request = SendMessageRequest(
                 conversationId = conversationId,
                 text = text,
                 replyTo = replyTo
             )
-            // Optimistic update could be done here
+            
             val result = chatRepository.sendMessage(request)
             result.onSuccess { message ->
-                handleNewMessage(message)
+                // Remove temp message and add real message
+                val currentMessages = _chatState.value.messages.filter { it.id != tempId }.toMutableList()
+                // Check for duplicates (real message might have arrived via socket already)
+                if (currentMessages.none { it.id == message.id }) {
+                    currentMessages.add(0, message)
+                }
+                _chatState.value = _chatState.value.copy(messages = currentMessages)
+                markAsRead(message.conversationId)
+            }.onFailure {
+                // Handle failure: remove temp message or mark as failed
+                // For now, just remove it
+                val currentMessages = _chatState.value.messages.filter { it.id != tempId }
+                _chatState.value = _chatState.value.copy(messages = currentMessages)
             }
         }
     }
@@ -217,7 +243,8 @@ class ChatContextManager(
         if (message.conversationId == _chatState.value.currentConversation?.id) {
             // Check for duplicates
             if (currentMessages.none { it.id == message.id }) {
-                currentMessages.add(message)
+                // Prepend new messages (Newest -> Oldest)
+                currentMessages.add(0, message)
                 _chatState.value = _chatState.value.copy(messages = currentMessages)
                 markAsRead(message.conversationId)
             }

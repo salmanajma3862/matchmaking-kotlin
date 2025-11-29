@@ -30,7 +30,6 @@ import com.example.dummyapp.context.LocalAuthContext
 import com.example.dummyapp.context.LocalChatContext
 import com.example.dummyapp.ui.components.chat.ChatInput
 import com.example.dummyapp.ui.components.chat.MessageBubble
-import com.example.dummyapp.ui.components.chat.MessageBubble
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -93,6 +92,8 @@ fun ChatScreen(
             listState.animateScrollToItem(0)
         }
     }
+
+    var replyingTo by remember { mutableStateOf<com.example.dummyapp.data.models.Message?>(null) }
 
     Scaffold(
         containerColor = Color(0xFFF9FAFB), // Gray-50
@@ -182,7 +183,10 @@ fun ChatScreen(
             ) {
                 ChatInput(
                     onSendMessage = { text ->
-                        chatContext.sendMessage(conversationId, text)
+                        authState.user?.let { user ->
+                            chatContext.sendMessage(conversationId, text, user, replyingTo?.id)
+                        }
+                        replyingTo = null
                     },
                     onTyping = { isTyping ->
                         if (isTyping) chatContext.startTyping(conversationId)
@@ -207,7 +211,9 @@ fun ChatScreen(
                         if (file != null) {
                             chatContext.sendAudioMessage(conversationId, file)
                         }
-                    }
+                    },
+                    replyToMessage = replyingTo,
+                    onCancelReply = { replyingTo = null }
                 )
             }
         }
@@ -233,7 +239,8 @@ fun ChatScreen(
                             isMe = message.sender.id == currentUserId,
                             avatarUrl = if (message.sender.id == currentUserId) null else otherUserAvatar,
                             onImageClick = { url -> selectedImage = url },
-                            onLongClick = { msg -> messageToDelete = msg }
+                            onLongClick = { msg -> messageToDelete = msg },
+                            onReply = { msg -> replyingTo = msg }
                         )
                     }
                 }

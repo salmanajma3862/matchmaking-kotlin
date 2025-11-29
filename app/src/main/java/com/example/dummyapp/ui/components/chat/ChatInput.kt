@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,7 +26,9 @@ fun ChatInput(
     onTyping: (Boolean) -> Unit,
     onImageSelected: () -> Unit,
     onStartRecording: () -> Unit = {},
-    onStopRecording: () -> Unit = {}
+    onStopRecording: () -> Unit = {},
+    replyToMessage: com.example.dummyapp.data.models.Message? = null,
+    onCancelReply: () -> Unit = {}
 ) {
     var text by remember { mutableStateOf("") }
     var isRecording by remember { mutableStateOf(false) }
@@ -42,6 +45,49 @@ fun ChatInput(
             .background(Color.White)
             .padding(8.dp)
     ) {
+        // Reply Preview
+        if (replyToMessage != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+                    .background(Color(0xFFF3F4F6), RoundedCornerShape(12.dp))
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .height(36.dp)
+                        .background(pinkColor, RoundedCornerShape(2.dp))
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Replying to ${replyToMessage.sender.name}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = pinkColor,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    )
+                    Text(
+                        text = if (replyToMessage.text.isNotEmpty()) replyToMessage.text else "Media",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
+                IconButton(onClick = onCancelReply) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Cancel Reply",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically

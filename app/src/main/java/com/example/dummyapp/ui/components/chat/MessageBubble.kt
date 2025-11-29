@@ -1,6 +1,7 @@
 package com.example.dummyapp.ui.components.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -37,7 +38,8 @@ fun MessageBubble(
     isMe: Boolean,
     avatarUrl: String? = null,
     onImageClick: (String) -> Unit = {},
-    onLongClick: (Message) -> Unit = {}
+    onLongClick: (Message) -> Unit = {},
+    onReply: (Message) -> Unit = {}
 ) {
     val pinkColor = Color(0xFFEC4899) // Pink-500
     val roseColor = Color(0xFFF43F5E) // Rose-500
@@ -85,6 +87,7 @@ fun MessageBubble(
                 modifier = Modifier
                     .background(bubbleBrush, shape)
                     .widthIn(max = 280.dp)
+                    .alpha(if (message.isSending) 0.7f else 1f)
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onLongPress = { showMenu = true }
@@ -93,6 +96,41 @@ fun MessageBubble(
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 Column {
+                    // Replied Message Context
+                    if (message.replyTo != null) {
+                        Row(
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .background(Color.Black.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                .padding(8.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(2.dp)
+                                    .height(24.dp)
+                                    .background(if (isMe) Color.White else pinkColor, RoundedCornerShape(1.dp))
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = message.replyTo.sender.name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (isMe) Color.White.copy(alpha = 0.9f) else pinkColor,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                                )
+                                Text(
+                                    text = if (message.replyTo.text.isNotEmpty()) message.replyTo.text else "Media",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (isMe) Color.White.copy(alpha = 0.7f) else Color.Gray,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+
                     if (message.isDeletedForEveryone) {
                         Text(
                             text = "This message was deleted",
@@ -269,7 +307,10 @@ fun MessageBubble(
                     )
                     DropdownMenuItem(
                         text = { Text("Reply", color = Color.Black) },
-                        onClick = { showMenu = false /* TODO: Implement Reply */ }
+                        onClick = { 
+                            showMenu = false 
+                            onReply(message)
+                        }
                     )
                     DropdownMenuItem(
                         text = { Text("Delete", color = Color.Red) },
@@ -283,7 +324,7 @@ fun MessageBubble(
         }
         
         Text(
-            text = formatTime(message.createdAt),
+            text = if (message.isSending) "Sending..." else formatTime(message.createdAt),
             color = Color(0xFF9CA3AF), // Gray-400
             fontSize = 10.sp,
             modifier = Modifier.padding(
