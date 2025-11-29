@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
 
                             Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                                 AppNavigation(
-                                    modifier = Modifier.padding(innerPadding),
+                                    modifier = Modifier,
                                     startDestination = startDestination
                                 )
                             }

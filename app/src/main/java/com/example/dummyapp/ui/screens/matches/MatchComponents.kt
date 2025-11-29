@@ -265,12 +265,12 @@ fun MatchProfileCard(
         ) {
             Text(
                 text = "${user.name}, ${calculateAge(user.dob)}",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "${user.city ?: "Unknown"}, ${user.country ?: ""}",
+                text = user.city ?: "Unknown",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.9f)
             )
