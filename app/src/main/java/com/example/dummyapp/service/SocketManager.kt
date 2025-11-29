@@ -131,12 +131,20 @@ class SocketManager @Inject constructor() {
         awaitClose { socket?.off("message_updated", listener) }
     }
 
-    fun observeMessageDeletions(): Flow<String> = callbackFlow {
+    data class MessageDeletionEvent(
+        val messageId: String,
+        val isDeletedForEveryone: Boolean,
+        val text: String? = null
+    )
+
+    fun observeMessageDeletions(): Flow<MessageDeletionEvent> = callbackFlow {
         val listener = { args: Array<Any> ->
             try {
                 val data = args[0] as JSONObject
                 val messageId = data.getString("messageId")
-                trySend(messageId)
+                val isDeletedForEveryone = data.optBoolean("deleteForEveryone", false)
+                val text = data.optString("text", null)
+                trySend(MessageDeletionEvent(messageId, isDeletedForEveryone, text))
             } catch (e: Exception) {
                 Log.e(TAG, "Error parsing deleted message", e)
             }

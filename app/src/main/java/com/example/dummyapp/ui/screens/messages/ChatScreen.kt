@@ -62,6 +62,7 @@ fun ChatScreen(
     val listState = rememberLazyListState()
     val context = LocalContext.current
     var selectedImage by remember { mutableStateOf<String?>(null) }
+    var messageToDelete by remember { mutableStateOf<com.example.dummyapp.data.models.Message?>(null) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -231,7 +232,8 @@ fun ChatScreen(
                             message = message,
                             isMe = message.sender.id == currentUserId,
                             avatarUrl = if (message.sender.id == currentUserId) null else otherUserAvatar,
-                            onImageClick = { url -> selectedImage = url }
+                            onImageClick = { url -> selectedImage = url },
+                            onLongClick = { msg -> messageToDelete = msg }
                         )
                     }
                 }
@@ -239,6 +241,43 @@ fun ChatScreen(
         }
     }
 
+
+    if (messageToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { messageToDelete = null },
+            title = { Text("Delete Message") },
+            text = { Text("Are you sure you want to delete this message?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        messageToDelete?.let { msg ->
+                            chatContext.deleteMessage(msg.id, forEveryone = false)
+                        }
+                        messageToDelete = null
+                    }
+                ) {
+                    Text("Delete for me")
+                }
+            },
+            dismissButton = {
+                if (messageToDelete?.sender?.id == currentUserId) {
+                    TextButton(
+                        onClick = {
+                            messageToDelete?.let { msg ->
+                                chatContext.deleteMessage(msg.id, forEveryone = true)
+                            }
+                            messageToDelete = null
+                        }
+                    ) {
+                        Text("Delete for everyone")
+                    }
+                }
+                TextButton(onClick = { messageToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     if (selectedImage != null) {
         Dialog(

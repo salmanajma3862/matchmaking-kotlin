@@ -32,7 +32,7 @@ class ChatRepository @Inject constructor(
     fun observeNewMessages(): Flow<Message> = socketManager.observeNewMessages()
     fun observeTyping(): Flow<Pair<String, String>> = socketManager.observeTyping()
     fun observeMessageUpdates(): Flow<Message> = socketManager.observeMessageUpdates()
-    fun observeMessageDeletions(): Flow<String> = socketManager.observeMessageDeletions()
+    fun observeMessageDeletions(): Flow<SocketManager.MessageDeletionEvent> = socketManager.observeMessageDeletions()
 
     // API Calls
     suspend fun getConversations(): Result<List<Conversation>> {

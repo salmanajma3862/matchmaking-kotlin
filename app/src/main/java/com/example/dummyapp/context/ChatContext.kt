@@ -56,8 +56,8 @@ class ChatContextManager(
         }
 
         scope.launch {
-            chatRepository.observeMessageDeletions().collect { messageId ->
-                handleMessageDeletion(messageId)
+            chatRepository.observeMessageDeletions().collect { event ->
+                handleMessageDeletion(event)
             }
         }
     }
@@ -248,9 +248,25 @@ class ChatContextManager(
         _chatState.value = _chatState.value.copy(messages = currentMessages)
     }
 
-    private fun handleMessageDeletion(messageId: String) {
-        val currentMessages = _chatState.value.messages.filter { it.id != messageId }
-        _chatState.value = _chatState.value.copy(messages = currentMessages)
+    private fun handleMessageDeletion(event: com.example.dummyapp.service.SocketManager.MessageDeletionEvent) {
+        if (event.isDeletedForEveryone) {
+            val currentMessages = _chatState.value.messages.map { 
+                if (it.id == event.messageId) {
+                    it.copy(
+                        text = event.text ?: "message deleted for everyone",
+                        isDeletedForEveryone = true,
+                        media = null
+                    )
+                } else {
+                    it
+                }
+            }
+            _chatState.value = _chatState.value.copy(messages = currentMessages)
+        } else {
+            // Delete for me (or just removed from view)
+            val currentMessages = _chatState.value.messages.filter { it.id != event.messageId }
+            _chatState.value = _chatState.value.copy(messages = currentMessages)
+        }
     }
 
     private fun handleTyping(conversationId: String, userId: String) {

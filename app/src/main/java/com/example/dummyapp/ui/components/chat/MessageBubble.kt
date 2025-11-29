@@ -26,13 +26,16 @@ import coil.compose.AsyncImage
 import com.example.dummyapp.data.models.Message
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 
 @Composable
 fun MessageBubble(
     message: Message,
     isMe: Boolean,
     avatarUrl: String? = null,
-    onImageClick: (String) -> Unit = {}
+    onImageClick: (String) -> Unit = {},
+    onLongClick: (Message) -> Unit = {}
 ) {
     val pinkColor = Color(0xFFEC4899) // Pink-500
     val roseColor = Color(0xFFF43F5E) // Rose-500
@@ -78,8 +81,13 @@ fun MessageBubble(
             Box(
                 modifier = Modifier
                     .background(bubbleBrush, shape)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
                     .widthIn(max = 280.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onLongPress = { onLongClick(message) }
+                        )
+                    }
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 Column {
                     if (message.isDeletedForEveryone) {
