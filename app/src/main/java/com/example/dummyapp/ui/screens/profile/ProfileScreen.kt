@@ -56,7 +56,7 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF9FAFB)) // Gray-50
+            .background(Color.White)
             .verticalScroll(scrollState)
     ) {
         // Header

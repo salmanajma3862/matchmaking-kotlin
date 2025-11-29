@@ -56,12 +56,7 @@ fun MatchScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Filled.Favorite,
-                                contentDescription = null,
-                                tint = androidx.compose.ui.graphics.Color(0xFFEC4899), // Pink-500
-                                modifier = Modifier.size(24.dp)
-                            )
+
                             Text(
                                 text = "Matches",
                                 style = MaterialTheme.typography.titleLarge,

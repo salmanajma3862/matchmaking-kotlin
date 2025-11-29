@@ -35,13 +35,22 @@ fun MainScreen(
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = androidx.compose.ui.graphics.Color.White
+            ) {
                 items.forEachIndexed { index, item ->
                     NavigationBarItem(
                         icon = { Icon(icons[index], contentDescription = item) },
                         label = { Text(item) },
                         selected = selectedItem == index,
-                        onClick = { selectedItem = index }
+                        onClick = { selectedItem = index },
+                        colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
+                            indicatorColor = com.example.dummyapp.ui.theme.LightColors.PrimaryContainer,
+                            selectedIconColor = com.example.dummyapp.ui.theme.LightColors.Primary,
+                            selectedTextColor = com.example.dummyapp.ui.theme.LightColors.Primary,
+                            unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
+                            unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
+                        )
                     )
                 }
             }
