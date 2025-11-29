@@ -212,6 +212,9 @@ fun ChatScreen(
                             chatContext.sendAudioMessage(conversationId, file)
                         }
                     },
+                    onCancelRecording = {
+                        audioRecorder.stopRecording() // Stop and discard
+                    },
                     replyToMessage = replyingTo,
                     onCancelReply = { replyingTo = null }
                 )

@@ -225,7 +225,29 @@ class ChatContextManager(
 
     fun deleteMessage(messageId: String, forEveryone: Boolean) {
         scope.launch {
-            chatRepository.deleteMessage(messageId, forEveryone)
+            // Optimistic Update
+            val originalMessages = _chatState.value.messages
+            if (forEveryone) {
+                val currentMessages = originalMessages.map { 
+                    if (it.id == messageId) {
+                        it.copy(
+                            text = "message deleted for everyone",
+                            isDeletedForEveryone = true,
+                            media = null
+                        )
+                    } else it
+                }
+                _chatState.value = _chatState.value.copy(messages = currentMessages)
+            } else {
+                val currentMessages = originalMessages.filter { it.id != messageId }
+                _chatState.value = _chatState.value.copy(messages = currentMessages)
+            }
+
+            val result = chatRepository.deleteMessage(messageId, forEveryone)
+            result.onFailure {
+                // Revert on failure
+                _chatState.value = _chatState.value.copy(messages = originalMessages)
+            }
         }
     }
 

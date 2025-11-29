@@ -11,7 +11,9 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.draw.alpha
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.geometry.Offset
 
 @Composable
 fun ChatInput(
@@ -27,6 +33,7 @@ fun ChatInput(
     onImageSelected: () -> Unit,
     onStartRecording: () -> Unit = {},
     onStopRecording: () -> Unit = {},
+    onCancelRecording: () -> Unit = {},
     replyToMessage: com.example.dummyapp.data.models.Message? = null,
     onCancelReply: () -> Unit = {}
 ) {
@@ -39,12 +46,42 @@ fun ChatInput(
         colors = listOf(pinkColor, roseColor)
     )
 
+    var isLocked by remember { mutableStateOf(false) }
+    var offsetY by remember { mutableStateOf(0f) }
+    val lockThreshold = -150f // Distance to drag up to lock
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
             .padding(8.dp)
     ) {
+        // Lock Indicator (Visible when recording and dragging or locked)
+        if (isRecording && !isLocked) {
+             Box(
+                 modifier = Modifier
+                     .fillMaxWidth()
+                     .height(100.dp) // Height for drag area
+                     .offset(y = offsetY.dp / 2) // Parallax effect or just visual feedback
+                     .alpha(if (offsetY < -20f) 1f else 0f), // Fade in when dragging starts
+                 contentAlignment = Alignment.BottomCenter
+             ) {
+                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                     Icon(
+                         imageVector = Icons.Default.Lock,
+                         contentDescription = "Lock Recording",
+                         tint = if (offsetY < lockThreshold) pinkColor else Color.Gray
+                     )
+                     Text(
+                         text = "Slide up to lock",
+                         style = MaterialTheme.typography.bodySmall,
+                         color = Color.Gray
+                     )
+                     Spacer(modifier = Modifier.height(8.dp))
+                 }
+             }
+        }
+
         // Reply Preview
         if (replyToMessage != null) {
             Row(
@@ -92,133 +129,176 @@ fun ChatInput(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Image Button
-            IconButton(
-                onClick = onImageSelected,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Image,
-                    contentDescription = "Add Image",
-                    tint = Color(0xFF6B7280) // Gray-500
-                )
-            }
-            
-            // Smile Button (Placeholder)
-            IconButton(
-                onClick = { /* TODO */ },
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Face, // Using Face as Smile
-                    contentDescription = "Emoji",
-                    tint = Color(0xFF6B7280) // Gray-500
-                )
-            }
-
-            // Input Field
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 8.dp)
-                    .height(48.dp)
-                    .background(Color(0xFFF3F4F6), RoundedCornerShape(24.dp)) // Gray-100
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                if (text.isEmpty() && !isRecording) {
-                    Text(
-                        text = "Type a message...",
-                        color = Color(0xFF9CA3AF), // Gray-400
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+            if (isLocked) {
+                // Locked State UI
+                IconButton(onClick = {
+                    isRecording = false
+                    isLocked = false
+                    offsetY = 0f
+                    onCancelRecording()
+                }) {
+                    Text("Cancel", color = Color.Red)
                 }
                 
-                androidx.compose.foundation.text.BasicTextField(
-                    value = if (isRecording) "Recording..." else text,
-                    onValueChange = { 
-                        if (!isRecording) {
-                            text = it
-                            onTyping(it.isNotEmpty())
-                        }
-                    },
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = if (isRecording) Color(0xFFEF4444) else Color.Black // Red-500 if recording
-                    ),
-                    maxLines = 4,
-                    enabled = !isRecording,
-                    modifier = Modifier.fillMaxWidth()
+                Spacer(modifier = Modifier.weight(1f))
+                
+                Text(
+                    text = "Recording...",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodyMedium
                 )
-            }
-
-            // Send/Mic Button
-            if (text.isNotBlank()) {
-                Box(
+                
+                Spacer(modifier = Modifier.weight(1f))
+                
+                IconButton(
+                    onClick = {
+                        isRecording = false
+                        isLocked = false
+                        offsetY = 0f
+                        onStopRecording()
+                    },
                     modifier = Modifier
                         .size(40.dp)
                         .background(gradientBrush, CircleShape)
-                        .clickable {
-                            onSendMessage(text)
-                            text = ""
-                            onTyping(false)
-                        },
-                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Send",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        contentDescription = "Send Audio",
+                        tint = Color.White
                     )
                 }
             } else {
-                 // Mic Button
-                 val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                 val isPressed by interactionSource.collectIsPressedAsState()
-                 
-                 LaunchedEffect(isPressed) {
-                     if (isPressed) {
-                         isRecording = true
-                         onStartRecording()
-                     } else {
-                         if (isRecording) {
-                             isRecording = false
-                             onStopRecording()
-                         }
-                     }
-                 }
-
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            if (isRecording) androidx.compose.ui.graphics.SolidColor(Color(0xFFEF4444)) else gradientBrush, 
-                            CircleShape
-                        )
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null,
-                            onClick = {}
-                        ),
-                    contentAlignment = Alignment.Center
+                // Normal Input UI
+                // Image Button
+                IconButton(
+                    onClick = onImageSelected,
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = if (isRecording) Icons.Filled.Mic else Icons.Filled.Mic,
-                        contentDescription = "Record Audio",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        imageVector = Icons.Default.Image,
+                        contentDescription = "Add Image",
+                        tint = Color(0xFF6B7280) // Gray-500
                     )
                 }
+                
+                // Smile Button (Placeholder)
+                IconButton(
+                    onClick = { /* TODO */ },
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Face, // Using Face as Smile
+                        contentDescription = "Emoji",
+                        tint = Color(0xFF6B7280) // Gray-500
+                    )
+                }
+
+                // Input Field
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 8.dp)
+                        .height(48.dp)
+                        .background(Color(0xFFF3F4F6), RoundedCornerShape(24.dp)) // Gray-100
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    if (text.isEmpty() && !isRecording) {
+                        Text(
+                            text = "Type a message...",
+                            color = Color(0xFF9CA3AF), // Gray-400
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    
+                    androidx.compose.foundation.text.BasicTextField(
+                        value = if (isRecording) "Recording..." else text,
+                        onValueChange = { 
+                            if (!isRecording) {
+                                text = it
+                                onTyping(it.isNotEmpty())
+                            }
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = if (isRecording) Color(0xFFEF4444) else Color.Black // Red-500 if recording
+                        ),
+                        maxLines = 4,
+                        enabled = !isRecording,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // Send/Mic Button
+                if (text.isNotBlank()) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(gradientBrush, CircleShape)
+                            .clickable {
+                                onSendMessage(text)
+                                text = ""
+                                onTyping(false)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Send",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                } else {
+                     // Mic Button with Gesture
+                     Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                if (isRecording) androidx.compose.ui.graphics.SolidColor(Color(0xFFEF4444)) else gradientBrush, 
+                                CircleShape
+                            )
+                            .pointerInput(Unit) {
+                                detectDragGestures(
+                                    onDragStart = { offset ->
+                                        isRecording = true
+                                        onStartRecording()
+                                        offsetY = 0f
+                                    },
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        offsetY += dragAmount.y
+                                        if (offsetY < lockThreshold) {
+                                            isLocked = true
+                                        }
+                                    },
+                                    onDragEnd = {
+                                        if (!isLocked) {
+                                            isRecording = false
+                                            offsetY = 0f
+                                            onStopRecording()
+                                        }
+                                        // If locked, do nothing (keep recording)
+                                    },
+                                    onDragCancel = {
+                                        if (!isLocked) {
+                                            isRecording = false
+                                            offsetY = 0f
+                                            onCancelRecording()
+                                        }
+                                    }
+                                )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Mic,
+                            contentDescription = "Record Audio",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
-        }
-        
-        if (isRecording) {
-            Text(
-                text = "Recording...",
-                color = Color(0xFFEF4444),
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp)
-            )
         }
     }
 }
