@@ -46,7 +46,6 @@ fun MessageBubble(
     }
     
     val textColor = if (isMe) Color.White else Color(0xFF111827) // Gray-900
-    val timeColor = if (isMe) Color.White.copy(alpha = 0.7f) else Color(0xFF9CA3AF) // Gray-400
     
     val shape = if (isMe) {
         RoundedCornerShape(topStart = 16.dp, topEnd = 4.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
@@ -54,27 +53,28 @@ fun MessageBubble(
         RoundedCornerShape(topStart = 4.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
     }
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 0.dp, vertical = 4.dp),
-        horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start,
-        verticalAlignment = Alignment.Bottom
+        horizontalAlignment = if (isMe) Alignment.End else Alignment.Start
     ) {
-        if (!isMe) {
-            AsyncImage(
-                model = avatarUrl ?: "https://via.placeholder.com/150",
-                contentDescription = "Avatar",
-                modifier = Modifier
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(Color.Gray),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-        }
+        Row(
+            verticalAlignment = Alignment.Bottom
+        ) {
+            if (!isMe) {
+                AsyncImage(
+                    model = avatarUrl ?: "https://via.placeholder.com/150",
+                    contentDescription = "Avatar",
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(Color.Gray),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
 
-        Column(horizontalAlignment = if (isMe) Alignment.End else Alignment.Start) {
             Box(
                 modifier = Modifier
                     .background(bubbleBrush, shape)
@@ -137,6 +137,7 @@ fun MessageBubble(
                             // Audio Message
                             val context = androidx.compose.ui.platform.LocalContext.current
                             var isPlaying by remember { mutableStateOf(false) }
+                            var progress by remember { mutableStateOf(0f) }
                             val mediaPlayer = remember { android.media.MediaPlayer() }
                             
                             DisposableEffect(Unit) {
@@ -145,6 +146,18 @@ fun MessageBubble(
                                         mediaPlayer.stop()
                                     }
                                     mediaPlayer.release()
+                                }
+                            }
+
+                            // Progress updater
+                            LaunchedEffect(isPlaying) {
+                                if (isPlaying) {
+                                    while (isPlaying) {
+                                        if (mediaPlayer.duration > 0) {
+                                            progress = mediaPlayer.currentPosition.toFloat() / mediaPlayer.duration.toFloat()
+                                        }
+                                        kotlinx.coroutines.delay(100)
+                                    }
                                 }
                             }
 
@@ -168,6 +181,7 @@ fun MessageBubble(
                                                     }
                                                     mediaPlayer.setOnCompletionListener { 
                                                         isPlaying = false 
+                                                        progress = 0f
                                                     }
                                                 } else {
                                                     mediaPlayer.start()
@@ -193,7 +207,7 @@ fun MessageBubble(
                                 
                                 Spacer(modifier = Modifier.width(8.dp))
                                 
-                                // Fake waveform
+                                // Fake waveform with progress
                                 Row(
                                     modifier = Modifier
                                         .weight(1f)
@@ -201,24 +215,24 @@ fun MessageBubble(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceEvenly
                                 ) {
-                                    repeat(15) {
+                                    val totalBars = 15
+                                    repeat(totalBars) { index ->
+                                        val isFilled = (index.toFloat() / totalBars.toFloat()) < progress
                                         Box(
                                             modifier = Modifier
                                                 .width(3.dp)
                                                 .height((10..24).random().dp)
                                                 .clip(CircleShape)
-                                                .background(if (isMe) Color.White.copy(alpha = 0.4f) else Color(0xFFF9A8D4)) // Pink-300
+                                                .background(
+                                                    if (isMe) {
+                                                        if (isFilled) Color.White else Color.White.copy(alpha = 0.4f)
+                                                    } else {
+                                                        if (isFilled) pinkColor else Color(0xFFF9A8D4) // Pink-300
+                                                    }
+                                                )
                                         )
                                     }
                                 }
-                                
-                                Spacer(modifier = Modifier.width(8.dp))
-                                
-                                Text(
-                                    text = "0:15", // Placeholder duration
-                                    color = textColor.copy(alpha = 0.8f),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
                             }
                         } else {
                             Text(
@@ -229,14 +243,17 @@ fun MessageBubble(
                     }
                 }
             }
-            
-            Text(
-                text = formatTime(message.createdAt),
-                color = Color(0xFF9CA3AF), // Gray-400
-                fontSize = 10.sp,
-                modifier = Modifier.padding(top = 4.dp)
-            )
         }
+        
+        Text(
+            text = formatTime(message.createdAt),
+            color = Color(0xFF9CA3AF), // Gray-400
+            fontSize = 10.sp,
+            modifier = Modifier.padding(
+                top = 4.dp,
+                start = if (!isMe) 36.dp else 0.dp
+            )
+        )
     }
 }
 
