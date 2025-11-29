@@ -74,18 +74,19 @@ class ChatRepository @Inject constructor(
         }
     }
 
-    suspend fun sendPhotoMessage(
-        imagePart: MultipartBody.Part,
+    suspend fun sendMediaMessage(
+        mediaPart: MultipartBody.Part,
         conversationId: RequestBody,
         text: RequestBody,
         messageType: RequestBody
     ): Result<Message> {
         return try {
-            val response = apiService.sendPhotoMessage(imagePart, conversationId, text, messageType)
+            // Reusing sendPhotoMessage API endpoint as it expects 'image' part which we construct manually
+            val response = apiService.sendPhotoMessage(mediaPart, conversationId, text, messageType)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Error sending photo message: ${response.code()}"))
+                Result.failure(Exception("Error sending media message: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

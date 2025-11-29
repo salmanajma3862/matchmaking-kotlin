@@ -5,9 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -98,6 +102,67 @@ fun MessageBubble(
                         Text(
                             text = message.text,
                             color = textColor
+                        )
+                    }
+                } else if (message.media?.audioUrl != null) {
+                    // Audio Message
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    var isPlaying by remember { mutableStateOf(false) }
+                    val mediaPlayer = remember { android.media.MediaPlayer() }
+                    
+                    DisposableEffect(Unit) {
+                        onDispose {
+                            if (mediaPlayer.isPlaying) {
+                                mediaPlayer.stop()
+                            }
+                            mediaPlayer.release()
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = {
+                                if (isPlaying) {
+                                    mediaPlayer.pause()
+                                    isPlaying = false
+                                } else {
+                                    try {
+                                        if (mediaPlayer.duration == 0) { // Not prepared
+                                            mediaPlayer.setDataSource(message.media.audioUrl)
+                                            mediaPlayer.prepareAsync()
+                                            mediaPlayer.setOnPreparedListener { 
+                                                it.start() 
+                                                isPlaying = true
+                                            }
+                                            mediaPlayer.setOnCompletionListener { 
+                                                isPlaying = false 
+                                                // Reset?
+                                            }
+                                        } else {
+                                            mediaPlayer.start()
+                                            isPlaying = true
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                contentDescription = if (isPlaying) "Pause" else "Play",
+                                tint = textColor
+                            )
+                        }
+                        
+                        Text(
+                            text = "Audio Message",
+                            color = textColor,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 } else {

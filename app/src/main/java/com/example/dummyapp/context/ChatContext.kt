@@ -150,7 +150,29 @@ class ChatContextManager(
                 val textBody = okhttp3.RequestBody.create("text/plain".toMediaTypeOrNull(), "")
                 val messageTypeBody = okhttp3.RequestBody.create("text/plain".toMediaTypeOrNull(), "image")
 
-                val result = chatRepository.sendPhotoMessage(body, conversationIdBody, textBody, messageTypeBody)
+                val result = chatRepository.sendMediaMessage(body, conversationIdBody, textBody, messageTypeBody)
+                result.onSuccess { message ->
+                    handleNewMessage(message)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Handle error
+            }
+        }
+    }
+
+    fun sendAudioMessage(conversationId: String, audioFile: java.io.File) {
+        scope.launch {
+            try {
+                val type = "audio/mpeg" // Or determine from file extension
+                val requestFile = okhttp3.RequestBody.create(type.toMediaTypeOrNull(), audioFile)
+                // Backend expects 'image' field for file upload currently
+                val body = okhttp3.MultipartBody.Part.createFormData("image", audioFile.name, requestFile)
+                val conversationIdBody = okhttp3.RequestBody.create("text/plain".toMediaTypeOrNull(), conversationId)
+                val textBody = okhttp3.RequestBody.create("text/plain".toMediaTypeOrNull(), "")
+                val messageTypeBody = okhttp3.RequestBody.create("text/plain".toMediaTypeOrNull(), "audio")
+
+                val result = chatRepository.sendMediaMessage(body, conversationIdBody, textBody, messageTypeBody)
                 result.onSuccess { message ->
                     handleNewMessage(message)
                 }

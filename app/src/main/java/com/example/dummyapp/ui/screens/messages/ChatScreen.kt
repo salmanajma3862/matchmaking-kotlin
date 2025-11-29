@@ -69,6 +69,15 @@ fun ChatScreen(
         }
     }
 
+    val audioRecorder = remember { com.example.dummyapp.utils.AudioRecorder(context) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission granted, user can try recording again
+        }
+    }
+
     LaunchedEffect(conversationId) {
         if (chatState.currentConversation?.id != conversationId) {
             chatContext.selectConversation(conversationId)
@@ -153,6 +162,23 @@ fun ChatScreen(
                 },
                 onImageSelected = {
                     imagePickerLauncher.launch("image/*")
+                },
+                onStartRecording = {
+                    if (androidx.core.content.ContextCompat.checkSelfPermission(
+                            context,
+                            android.Manifest.permission.RECORD_AUDIO
+                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    ) {
+                        audioRecorder.startRecording()
+                    } else {
+                        permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                    }
+                },
+                onStopRecording = {
+                    val file = audioRecorder.stopRecording()
+                    if (file != null) {
+                        chatContext.sendAudioMessage(conversationId, file)
+                    }
                 }
             )
         }
