@@ -8,8 +8,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -92,95 +94,121 @@ fun ChatScreen(
     }
 
     Scaffold(
+        containerColor = Color(0xFFF9FAFB), // Gray-50
         topBar = {
-            TopAppBar(
-                title = { 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Avatar
-                        AsyncImage(
-                            model = otherUserAvatar ?: "https://via.placeholder.com/150",
-                            contentDescription = "Avatar",
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color.Gray),
-                            contentScale = ContentScale.Crop
+            // Custom Header
+            Surface(
+                shadowElevation = 1.dp,
+                color = Color.White
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .height(64.dp)
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                    }
+                    
+                    Spacer(modifier = Modifier.width(4.dp))
+                    
+                    // Avatar
+                    AsyncImage(
+                        model = otherUserAvatar ?: "https://via.placeholder.com/150",
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.Gray),
+                        contentScale = ContentScale.Crop
+                    )
+                    
+                    Spacer(modifier = Modifier.width(12.dp))
+                    
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = otherUserName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
                         )
                         
-                        Spacer(modifier = Modifier.width(12.dp))
-                        
-                        Column {
+                        // Status
+                        if (chatState.typingUsers.containsKey(conversationId)) {
                             Text(
-                                text = otherUserName,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                "typing...",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
                             )
-                            
-                            // Status
-                            if (chatState.typingUsers.containsKey(conversationId)) {
-                                Text(
-                                    "typing...",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            } else if (isOnline) {
-                                Text(
-                                    "Online",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFF4CAF50) // Green
-                                )
-                            } else if (lastActive != null) {
-                                Text(
-                                    "Last seen ${formatLastSeen(lastActive)}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
-                                )
-                            }
+                        } else if (isOnline) {
+                            Text(
+                                "Online",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF4CAF50) // Green
+                            )
+                        } else if (lastActive != null) {
+                            Text(
+                                "Last seen ${formatLastSeen(lastActive)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
                         }
                     }
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    
+                    // Action Icons
+                    IconButton(onClick = { /* TODO */ }) {
+                        Icon(Icons.Default.Call, contentDescription = "Call", tint = Color.Gray)
                     }
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO: Show menu */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                    IconButton(onClick = { /* TODO */ }) {
+                        Icon(Icons.Default.Videocam, contentDescription = "Video", tint = Color.Gray)
+                    }
+                    IconButton(onClick = { /* TODO */ }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.Gray)
                     }
                 }
-            )
+            }
         },
         bottomBar = {
-            ChatInput(
-                onSendMessage = { text ->
-                    chatContext.sendMessage(conversationId, text)
-                },
-                onTyping = { isTyping ->
-                    if (isTyping) chatContext.startTyping(conversationId)
-                    else chatContext.stopTyping(conversationId)
-                },
-                onImageSelected = {
-                    imagePickerLauncher.launch("image/*")
-                },
-                onStartRecording = {
-                    if (androidx.core.content.ContextCompat.checkSelfPermission(
-                            context,
-                            android.Manifest.permission.RECORD_AUDIO
-                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                    ) {
-                        audioRecorder.startRecording()
-                    } else {
-                        permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .navigationBarsPadding()
+                    .imePadding() 
+            ) {
+                ChatInput(
+                    onSendMessage = { text ->
+                        chatContext.sendMessage(conversationId, text)
+                    },
+                    onTyping = { isTyping ->
+                        if (isTyping) chatContext.startTyping(conversationId)
+                        else chatContext.stopTyping(conversationId)
+                    },
+                    onImageSelected = {
+                        imagePickerLauncher.launch("image/*")
+                    },
+                    onStartRecording = {
+                        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                                context,
+                                android.Manifest.permission.RECORD_AUDIO
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        ) {
+                            audioRecorder.startRecording()
+                        } else {
+                            permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                        }
+                    },
+                    onStopRecording = {
+                        val file = audioRecorder.stopRecording()
+                        if (file != null) {
+                            chatContext.sendAudioMessage(conversationId, file)
+                        }
                     }
-                },
-                onStopRecording = {
-                    val file = audioRecorder.stopRecording()
-                    if (file != null) {
-                        chatContext.sendAudioMessage(conversationId, file)
-                    }
-                }
-            )
+                )
+            }
         }
     ) { paddingValues ->
         Box(
@@ -195,7 +223,8 @@ fun ChatScreen(
                     state = listState,
                     reverseLayout = true, // Messages start from bottom
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 8.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(chatState.messages) { message ->
                         MessageBubble(

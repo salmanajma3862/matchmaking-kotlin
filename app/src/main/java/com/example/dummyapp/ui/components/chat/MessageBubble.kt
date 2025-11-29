@@ -34,8 +34,20 @@ fun MessageBubble(
     avatarUrl: String? = null,
     onImageClick: (String) -> Unit = {}
 ) {
-    val bubbleColor = if (isMe) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-    val textColor = if (isMe) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    val pinkColor = Color(0xFFEC4899) // Pink-500
+    val roseColor = Color(0xFFF43F5E) // Rose-500
+    
+    val bubbleBrush = if (isMe) {
+        androidx.compose.ui.graphics.Brush.horizontalGradient(
+            colors = listOf(pinkColor, roseColor)
+        )
+    } else {
+        androidx.compose.ui.graphics.SolidColor(Color(0xFFF3F4F6)) // Gray-100
+    }
+    
+    val textColor = if (isMe) Color.White else Color(0xFF111827) // Gray-900
+    val timeColor = if (isMe) Color.White.copy(alpha = 0.7f) else Color(0xFF9CA3AF) // Gray-400
+    
     val shape = if (isMe) {
         RoundedCornerShape(topStart = 16.dp, topEnd = 4.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
     } else {
@@ -45,7 +57,7 @@ fun MessageBubble(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 0.dp, vertical = 4.dp),
         horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start,
         verticalAlignment = Alignment.Bottom
     ) {
@@ -62,126 +74,168 @@ fun MessageBubble(
             Spacer(modifier = Modifier.width(8.dp))
         }
 
-        Box(
-            modifier = Modifier
-                .background(bubbleColor, shape)
-                .padding(12.dp)
-                .widthIn(max = 280.dp)
-        ) {
-            Column {
-                if (message.isDeletedForEveryone) {
-                    Text(
-                        text = "This message was deleted",
-                        color = textColor.copy(alpha = 0.6f),
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                    )
-                } else {
-                if (message.media?.imageUrl != null) {
-                    // Photo Placeholder
-                    Row(
-                        modifier = Modifier
-                            .clickable { onImageClick(message.media.imageUrl) }
-                            .padding(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Image,
-                            contentDescription = "Photo",
-                            tint = textColor
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+        Column(horizontalAlignment = if (isMe) Alignment.End else Alignment.Start) {
+            Box(
+                modifier = Modifier
+                    .background(bubbleBrush, shape)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .widthIn(max = 280.dp)
+            ) {
+                Column {
+                    if (message.isDeletedForEveryone) {
                         Text(
-                            text = "Photo",
-                            color = textColor,
-                            style = MaterialTheme.typography.bodyMedium
+                            text = "This message was deleted",
+                            color = textColor.copy(alpha = 0.6f),
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                         )
-                    }
-                    
-                    if (message.text.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = message.text,
-                            color = textColor
-                        )
-                    }
-                } else if (message.media?.audioUrl != null) {
-                    // Audio Message
-                    val context = androidx.compose.ui.platform.LocalContext.current
-                    var isPlaying by remember { mutableStateOf(false) }
-                    val mediaPlayer = remember { android.media.MediaPlayer() }
-                    
-                    DisposableEffect(Unit) {
-                        onDispose {
-                            if (mediaPlayer.isPlaying) {
-                                mediaPlayer.stop()
-                            }
-                            mediaPlayer.release()
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(
-                            onClick = {
-                                if (isPlaying) {
-                                    mediaPlayer.pause()
-                                    isPlaying = false
-                                } else {
-                                    try {
-                                        if (mediaPlayer.duration == 0) { // Not prepared
-                                            mediaPlayer.setDataSource(message.media.audioUrl)
-                                            mediaPlayer.prepareAsync()
-                                            mediaPlayer.setOnPreparedListener { 
-                                                it.start() 
-                                                isPlaying = true
-                                            }
-                                            mediaPlayer.setOnCompletionListener { 
-                                                isPlaying = false 
-                                                // Reset?
-                                            }
-                                        } else {
-                                            mediaPlayer.start()
-                                            isPlaying = true
-                                        }
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    }
+                    } else {
+                        if (message.media?.imageUrl != null) {
+                            // Photo Message
+                            Row(
+                                modifier = Modifier
+                                    .clickable { onImageClick(message.media.imageUrl) }
+                                    .padding(bottom = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(if (isMe) Color.White.copy(alpha = 0.2f) else Color(0xFFFCE7F3)), // Pink-100
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Image,
+                                        contentDescription = "Photo",
+                                        tint = if (isMe) Color.White else pinkColor
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Photo",
+                                        color = textColor,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                                    )
+                                    Text(
+                                        text = "Tap to view",
+                                        color = textColor.copy(alpha = 0.7f),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
                                 }
                             }
-                        ) {
-                            Icon(
-                                imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                contentDescription = if (isPlaying) "Pause" else "Play",
-                                tint = textColor
+                            
+                            if (message.text.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = message.text,
+                                    color = textColor
+                                )
+                            }
+                        } else if (message.media?.audioUrl != null) {
+                            // Audio Message
+                            val context = androidx.compose.ui.platform.LocalContext.current
+                            var isPlaying by remember { mutableStateOf(false) }
+                            val mediaPlayer = remember { android.media.MediaPlayer() }
+                            
+                            DisposableEffect(Unit) {
+                                onDispose {
+                                    if (mediaPlayer.isPlaying) {
+                                        mediaPlayer.stop()
+                                    }
+                                    mediaPlayer.release()
+                                }
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.width(200.dp)
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        if (isPlaying) {
+                                            mediaPlayer.pause()
+                                            isPlaying = false
+                                        } else {
+                                            try {
+                                                if (mediaPlayer.duration == 0) { // Not prepared
+                                                    mediaPlayer.setDataSource(message.media.audioUrl)
+                                                    mediaPlayer.prepareAsync()
+                                                    mediaPlayer.setOnPreparedListener { 
+                                                        it.start() 
+                                                        isPlaying = true
+                                                    }
+                                                    mediaPlayer.setOnCompletionListener { 
+                                                        isPlaying = false 
+                                                    }
+                                                } else {
+                                                    mediaPlayer.start()
+                                                    isPlaying = true
+                                                }
+                                            } catch (e: Exception) {
+                                                e.printStackTrace()
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(if (isMe) Color.White.copy(alpha = 0.2f) else Color(0xFFFCE7F3)) // Pink-100
+                                ) {
+                                    Icon(
+                                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                        contentDescription = if (isPlaying) "Pause" else "Play",
+                                        tint = if (isMe) Color.White else pinkColor,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.width(8.dp))
+                                
+                                // Fake waveform
+                                Row(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(24.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    repeat(15) {
+                                        Box(
+                                            modifier = Modifier
+                                                .width(3.dp)
+                                                .height((10..24).random().dp)
+                                                .clip(CircleShape)
+                                                .background(if (isMe) Color.White.copy(alpha = 0.4f) else Color(0xFFF9A8D4)) // Pink-300
+                                        )
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.width(8.dp))
+                                
+                                Text(
+                                    text = "0:15", // Placeholder duration
+                                    color = textColor.copy(alpha = 0.8f),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = message.text,
+                                color = textColor
                             )
                         }
-                        
-                        Text(
-                            text = "Audio Message",
-                            color = textColor,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
                     }
-                } else {
-                    Text(
-                        text = message.text,
-                        color = textColor
-                    )
                 }
-                }
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                Text(
-                    text = formatTime(message.createdAt),
-                    color = textColor.copy(alpha = 0.7f),
-                    fontSize = 10.sp,
-                    modifier = Modifier.align(Alignment.End)
-                )
             }
+            
+            Text(
+                text = formatTime(message.createdAt),
+                color = Color(0xFF9CA3AF), // Gray-400
+                fontSize = 10.sp,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 }

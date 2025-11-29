@@ -2,12 +2,16 @@ package com.example.dummyapp.ui.components.chat
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MicNone
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,82 +29,150 @@ fun ChatInput(
 ) {
     var text by remember { mutableStateOf("") }
     var isRecording by remember { mutableStateOf(false) }
+    
+    val pinkColor = Color(0xFFEC4899) // Pink-500
+    val roseColor = Color(0xFFF43F5E) // Rose-500
+    val gradientBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+        colors = listOf(pinkColor, roseColor)
+    )
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(Color.White)
+            .padding(8.dp)
     ) {
-        IconButton(onClick = onImageSelected) {
-            Icon(Icons.Default.Add, contentDescription = "Add Image", tint = MaterialTheme.colorScheme.primary)
-        }
-
-        TextField(
-            value = if (isRecording) "Recording..." else text,
-            onValueChange = { 
-                if (!isRecording) {
-                    text = it
-                    onTyping(it.isNotEmpty())
-                }
-            },
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp),
-            placeholder = { Text("Type a message...") },
-            shape = RoundedCornerShape(24.dp),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            maxLines = 4,
-            enabled = !isRecording
-        )
-
-        if (text.isNotBlank()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Image Button
             IconButton(
-                onClick = {
-                    onSendMessage(text)
-                    text = ""
-                    onTyping(false)
-                },
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            ) {
-                Icon(Icons.Default.Send, contentDescription = "Send")
-            }
-        } else {
-             // Mic Button
-             val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-             val isPressed by interactionSource.collectIsPressedAsState()
-             
-             LaunchedEffect(isPressed) {
-                 if (isPressed) {
-                     isRecording = true
-                     onStartRecording()
-                 } else {
-                     if (isRecording) {
-                         isRecording = false
-                         onStopRecording()
-                     }
-                 }
-             }
-
-            IconButton(
-                onClick = { /* Handled by interaction source */ },
-                interactionSource = interactionSource,
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = if (isRecording) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                onClick = onImageSelected,
+                modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    imageVector = if (isRecording) Icons.Filled.Mic else Icons.Filled.MicNone,
-                    contentDescription = "Record Audio"
+                    imageVector = Icons.Default.Image,
+                    contentDescription = "Add Image",
+                    tint = Color(0xFF6B7280) // Gray-500
                 )
             }
+            
+            // Smile Button (Placeholder)
+            IconButton(
+                onClick = { /* TODO */ },
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Face, // Using Face as Smile
+                    contentDescription = "Emoji",
+                    tint = Color(0xFF6B7280) // Gray-500
+                )
+            }
+
+            // Input Field
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
+                    .height(48.dp)
+                    .background(Color(0xFFF3F4F6), RoundedCornerShape(24.dp)) // Gray-100
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                if (text.isEmpty() && !isRecording) {
+                    Text(
+                        text = "Type a message...",
+                        color = Color(0xFF9CA3AF), // Gray-400
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                
+                androidx.compose.foundation.text.BasicTextField(
+                    value = if (isRecording) "Recording..." else text,
+                    onValueChange = { 
+                        if (!isRecording) {
+                            text = it
+                            onTyping(it.isNotEmpty())
+                        }
+                    },
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = if (isRecording) Color(0xFFEF4444) else Color.Black // Red-500 if recording
+                    ),
+                    maxLines = 4,
+                    enabled = !isRecording,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // Send/Mic Button
+            if (text.isNotBlank()) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(gradientBrush, CircleShape)
+                        .clickable {
+                            onSendMessage(text)
+                            text = ""
+                            onTyping(false)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "Send",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            } else {
+                 // Mic Button
+                 val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                 val isPressed by interactionSource.collectIsPressedAsState()
+                 
+                 LaunchedEffect(isPressed) {
+                     if (isPressed) {
+                         isRecording = true
+                         onStartRecording()
+                     } else {
+                         if (isRecording) {
+                             isRecording = false
+                             onStopRecording()
+                         }
+                     }
+                 }
+
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            if (isRecording) androidx.compose.ui.graphics.SolidColor(Color(0xFFEF4444)) else gradientBrush, 
+                            CircleShape
+                        )
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            onClick = {}
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isRecording) Icons.Filled.Mic else Icons.Filled.Mic,
+                        contentDescription = "Record Audio",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+        
+        if (isRecording) {
+            Text(
+                text = "Recording...",
+                color = Color(0xFFEF4444),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp)
+            )
         }
     }
 }
