@@ -14,6 +14,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +41,7 @@ fun MessageBubble(
 ) {
     val pinkColor = Color(0xFFEC4899) // Pink-500
     val roseColor = Color(0xFFF43F5E) // Rose-500
+    var showMenu by remember { mutableStateOf(false) }
     
     val bubbleBrush = if (isMe) {
         androidx.compose.ui.graphics.Brush.horizontalGradient(
@@ -84,7 +87,7 @@ fun MessageBubble(
                     .widthIn(max = 280.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onLongPress = { onLongClick(message) }
+                            onLongPress = { showMenu = true }
                         )
                     }
                     .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -249,6 +252,32 @@ fun MessageBubble(
                             )
                         }
                     }
+                }
+
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                    modifier = Modifier.background(Color.White, RoundedCornerShape(16.dp))
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Copy", color = Color.Black) },
+                        onClick = { showMenu = false /* TODO: Implement Copy */ }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Edit", color = Color.Black) },
+                        onClick = { showMenu = false /* TODO: Implement Edit */ }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Reply", color = Color.Black) },
+                        onClick = { showMenu = false /* TODO: Implement Reply */ }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete", color = Color.Red) },
+                        onClick = { 
+                            showMenu = false
+                            onLongClick(message) 
+                        }
+                    )
                 }
             }
         }
