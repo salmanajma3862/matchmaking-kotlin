@@ -16,6 +16,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.dummyapp.ui.components.cards.SwipeableCard
 import com.example.dummyapp.viewmodel.FeedViewModel
+import androidx.compose.material3.Button
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 
 @Composable
 fun FeedScreen(
@@ -32,7 +38,18 @@ fun FeedScreen(
         contentAlignment = Alignment.Center
     ) {
         if (userList.isEmpty()) {
+
             // Empty State or Loading
+            var showRetryButton by remember { mutableStateOf(false) }
+
+            LaunchedEffect(userList.isEmpty()) {
+                if (userList.isEmpty()) {
+                    showRetryButton = false
+                    delay(5000) // 5 seconds timeout
+                    showRetryButton = true
+                }
+            }
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -43,13 +60,23 @@ fun FeedScreen(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                CircularProgressIndicator()
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Searching for more...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
-                )
+                
+                if (showRetryButton) {
+                     Button(onClick = { 
+                         showRetryButton = false
+                         viewModel.refreshFeed() 
+                     }) {
+                         Text("Try Again")
+                     }
+                } else {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Searching for more...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                }
             }
         } else {
             // Card Stack

@@ -91,4 +91,11 @@ class FeedViewModel @Inject constructor(
     fun resetSwipeState() {
         _swipeState.value = null
     }
+
+    fun refreshFeed() {
+        currentPage = 1
+        isLastPage = false
+        _userList.value = emptyList()
+        loadFeed()
+    }
 }

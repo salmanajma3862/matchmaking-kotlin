@@ -25,6 +25,9 @@ import com.example.dummyapp.data.models.User
 import com.example.dummyapp.utils.NetworkResult
 import com.example.dummyapp.viewmodel.MatchViewModel
 import java.util.Calendar
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import com.example.dummyapp.R
 
 @Composable
 fun SentTab(viewModel: MatchViewModel, onNavigateToProfileDetail: (String, String) -> Unit) {
@@ -160,10 +163,20 @@ fun ErrorView(message: String?) {
     }
 }
 
+
 @Composable
-fun EmptyView(message: String) {
+fun EmptyView(message: String, imageRes: Int = R.drawable.nothing) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = message, style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = null,
+                modifier = Modifier.size(120.dp),
+                alpha = 0.6f
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = message, style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+        }
     }
 }
 
