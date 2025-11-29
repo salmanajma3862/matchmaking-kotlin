@@ -26,7 +26,7 @@ object LightColors {
     val TertiaryContainer = Color(0xFFF3E5F5) // Very light purple
     
     // Background & Surface
-    val Background = Color(0xFFFAFAFA) // Soft white background
+    val Background = Color(0xFFFFFFFF) // Pure white background
     val Surface = Color(0xFFFFFFFF) // Pure white for cards
     val SurfaceVariant = Color(0xFFF5F5F5) // Subtle gray for variations
     val SurfaceContainer = Color(0xFFEEEEEE) // Container background

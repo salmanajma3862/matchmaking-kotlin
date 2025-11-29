@@ -3,11 +3,11 @@ package com.example.dummyapp.ui.screens
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Message
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -31,7 +31,7 @@ fun MainScreen(
 ) {
     var selectedItem by remember { mutableIntStateOf(0) }
     val items = listOf("Feed", "Likes", "Matches", "Messages", "Profile")
-    val icons = listOf(Icons.Filled.Home, Icons.Filled.Favorite, Icons.Filled.Star, Icons.Filled.Message, Icons.Filled.Person)
+    val icons = listOf(Icons.Rounded.Home, Icons.Rounded.Favorite, Icons.Rounded.Star, Icons.Rounded.Email, Icons.Rounded.Person)
 
     Scaffold(
         bottomBar = {

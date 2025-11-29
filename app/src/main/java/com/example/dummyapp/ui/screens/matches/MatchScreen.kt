@@ -42,7 +42,6 @@ fun MatchScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(androidx.compose.ui.graphics.Color(0xFFF9FAFB)) // Gray-50
             ) {
                 // Header
                 Surface(
