@@ -62,6 +62,8 @@ fun ChatScreen(
     val context = LocalContext.current
     var selectedImage by remember { mutableStateOf<String?>(null) }
     var messageToDelete by remember { mutableStateOf<com.example.dummyapp.data.models.Message?>(null) }
+    var showMenu by remember { mutableStateOf(false) }
+    var showReportDialog by remember { mutableStateOf(false) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -167,8 +169,22 @@ fun ChatScreen(
                     IconButton(onClick = { /* TODO */ }) {
                         Icon(Icons.Default.Videocam, contentDescription = "Video", tint = Color.Gray)
                     }
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.Gray)
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.Gray)
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Report User") },
+                                onClick = {
+                                    showMenu = false
+                                    showReportDialog = true
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -310,6 +326,92 @@ fun ChatScreen(
             }
         }
     }
+
+    if (showReportDialog) {
+        ReportDialog(
+            onDismiss = { showReportDialog = false },
+            onSubmit = { reason, description ->
+                otherUser?.id?.let { reportedId ->
+                    chatContext.reportUser(
+                        reportedUserId = reportedId,
+                        reason = reason,
+                        description = description,
+                        onSuccess = {
+                            showReportDialog = false
+                        },
+                        onError = { error ->
+                            // Optional: Show error
+                        }
+                    )
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun ReportDialog(
+    onDismiss: () -> Unit,
+    onSubmit: (String, String) -> Unit
+) {
+    var selectedReason by remember { mutableStateOf("spam") }
+    var description by remember { mutableStateOf("") }
+    val reasons = listOf(
+        "spam" to "Spam",
+        "harassment" to "Harassment",
+        "inappropriate_content" to "Inappropriate Content",
+        "fake_profile" to "Fake Profile",
+        "other" to "Other"
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Report User") },
+        text = {
+            Column {
+                Text("Why are you reporting this user?", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                reasons.forEach { (key, label) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedReason = key }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedReason == key,
+                            onClick = { selectedReason = key }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = label)
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description (Optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSubmit(selectedReason, description) }
+            ) {
+                Text("Submit")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 private fun formatLastSeen(isoString: String): String {

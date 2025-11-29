@@ -98,4 +98,9 @@ interface MessageApiService {
     suspend fun sendTypingIndicator(
         @Body conversationId: Map<String, String>
     ): Response<ApiResponse<Any>>
+
+    @POST("api/reports")
+    suspend fun reportUser(
+        @Body request: com.example.dummyapp.data.models.request.ReportRequest
+    ): Response<Any>
 }

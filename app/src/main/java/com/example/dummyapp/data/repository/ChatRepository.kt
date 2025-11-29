@@ -144,4 +144,23 @@ class ChatRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun reportUser(reportedUserId: String, reason: String, description: String): Result<Boolean> {
+        return try {
+            val response = apiService.reportUser(
+                com.example.dummyapp.data.models.request.ReportRequest(
+                    reportedUserId = reportedUserId,
+                    reason = reason,
+                    description = description
+                )
+            )
+            if (response.isSuccessful) {
+                Result.success(true)
+            } else {
+                Result.failure(Exception("Error reporting user: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

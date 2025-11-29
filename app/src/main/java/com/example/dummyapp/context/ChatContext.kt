@@ -217,6 +217,17 @@ class ChatContextManager(
         chatRepository.stopTyping(conversationId)
     }
 
+    fun reportUser(reportedUserId: String, reason: String, description: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        scope.launch {
+            val result = chatRepository.reportUser(reportedUserId, reason, description)
+            result.onSuccess {
+                onSuccess()
+            }.onFailure { e ->
+                onError(e.message ?: "Unknown error")
+            }
+        }
+    }
+
     fun editMessage(messageId: String, newText: String) {
         scope.launch {
             chatRepository.editMessage(messageId, newText)
