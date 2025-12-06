@@ -48,7 +48,8 @@ fun ProfileScreen(
     onSubscription: () -> Unit,
     onHelp: () -> Unit,
     onAbout: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onViewInviteCodes: () -> Unit = {}
 ) {
     val currentUserState by viewModel.currentUserState.collectAsState()
     val createInviteState by viewModel.createInviteState.collectAsState()
@@ -290,6 +291,14 @@ fun ProfileScreen(
                     onClick = { showInviteDialog = true },
                     iconTint = Color(0xFF059669), // Emerald-600
                     iconBgColor = Color(0xFFECFDF5) // Emerald-50
+                )
+                MenuItem(
+                    icon = Icons.Default.QrCode,
+                    label = "My Invite Codes",
+                    subtitle = "View and manage your generated codes",
+                    onClick = onViewInviteCodes,
+                    iconTint = Color(0xFF0891B2), // Cyan-600
+                    iconBgColor = Color(0xFFECFEFF) // Cyan-50
                 )
             }
 

@@ -2,6 +2,7 @@ package com.example.dummyapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dummyapp.data.models.InviteCode
 import com.example.dummyapp.data.models.User
 import com.example.dummyapp.data.repository.AuthRepository
 import com.example.dummyapp.utils.NetworkResult
@@ -53,6 +54,9 @@ class AuthViewModel @Inject constructor(
 
     private val _childDataState = MutableStateFlow<NetworkResult<Any?>?>(null)
     val childDataState: StateFlow<NetworkResult<Any?>?> = _childDataState.asStateFlow()
+
+    private val _myInviteCodesState = MutableStateFlow<NetworkResult<List<InviteCode>>?>(null)
+    val myInviteCodesState: StateFlow<NetworkResult<List<InviteCode>>?> = _myInviteCodesState.asStateFlow()
 
 
     
@@ -203,10 +207,19 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun fetchMyInviteCodes() {
+        viewModelScope.launch {
+            authRepository.getMyInviteCodes().collect { result ->
+                _myInviteCodesState.value = result
+            }
+        }
+    }
+
     fun clearFamilyStates() {
         _familySignupState.value = null
         _familyLinkState.value = null
         _createInviteState.value = null
         _childDataState.value = null
+        _myInviteCodesState.value = null
     }
 }

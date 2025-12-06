@@ -1,6 +1,7 @@
 package com.example.dummyapp.data.repository
 
 import com.example.dummyapp.data.api.AuthApiService
+import com.example.dummyapp.data.models.InviteCode
 import com.example.dummyapp.data.models.User
 import com.example.dummyapp.data.models.request.*
 import com.example.dummyapp.data.preferences.UserPreferences
@@ -454,6 +455,28 @@ class AuthRepository @Inject constructor(
             val response = authApiService.getChildData()
             if (response.isSuccessful && response.body() != null) {
                 emit(NetworkResult.Success<Any?>(response.body()!!.data))
+            } else {
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+
+    /**
+     * Get My Invite Codes
+     */
+    fun getMyInviteCodes(): Flow<NetworkResult<List<InviteCode>>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val response = authApiService.getMyInviteCodes()
+            if (response.isSuccessful && response.body() != null) {
+                val apiResponse = response.body()!!
+                if (apiResponse.success && apiResponse.data != null) {
+                    emit(NetworkResult.Success(apiResponse.data))
+                } else {
+                    emit(NetworkResult.Error(apiResponse.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+                }
             } else {
                 emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
             }

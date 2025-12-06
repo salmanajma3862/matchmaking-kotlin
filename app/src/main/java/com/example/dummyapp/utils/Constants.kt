@@ -64,6 +64,7 @@ object Constants {
         const val FAMILY_BASE = "api/family"
         const val FAMILY_SIGNUP = "$FAMILY_BASE/signup"
         const val FAMILY_INVITE = "$FAMILY_BASE/invite"
+        const val FAMILY_MY_CODES = "$FAMILY_BASE/my-codes"
         const val FAMILY_LINK = "$FAMILY_BASE/link"
         const val FAMILY_CHILD_DATA = "$FAMILY_BASE/child-data"
     }

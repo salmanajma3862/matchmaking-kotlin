@@ -37,6 +37,7 @@ sealed class Screen(val route: String) {
     object Subscription : Screen("subscription")
     object Help : Screen("help")
     object About : Screen("about")
+    object InviteCodes : Screen("invite_codes")
 }
 
 @Composable
@@ -157,5 +158,10 @@ fun AppNavigation(
         composable(Screen.Subscription.route) { com.example.dummyapp.ui.screens.profile.SubscriptionScreen() }
         composable(Screen.Help.route) { com.example.dummyapp.ui.screens.profile.HelpScreen() }
         composable(Screen.About.route) { com.example.dummyapp.ui.screens.profile.AboutScreen() }
+        composable(Screen.InviteCodes.route) {
+            com.example.dummyapp.ui.screens.profile.InviteCodesScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
     }
 }
