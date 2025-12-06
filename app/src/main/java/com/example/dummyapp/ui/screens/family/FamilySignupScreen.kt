@@ -1,4 +1,4 @@
-package com.example.dummyapp.ui.screens.auth
+package com.example.dummyapp.ui.screens.family
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,69 +13,51 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.dummyapp.context.LocalAuthContext
 import com.example.dummyapp.ui.components.buttons.PrimaryButton
-import com.example.dummyapp.ui.components.buttons.SecondaryButton
-import com.example.dummyapp.ui.components.buttons.AppTextButton
+import com.example.dummyapp.ui.components.inputs.AppTextField
 import com.example.dummyapp.ui.components.inputs.EmailTextField
 import com.example.dummyapp.ui.components.inputs.PasswordTextField
-import com.example.dummyapp.ui.components.inputs.PhoneTextField
 import com.example.dummyapp.ui.theme.*
 import com.example.dummyapp.utils.NetworkResult
 import com.example.dummyapp.utils.ValidationUtils
 import com.example.dummyapp.viewmodel.AuthViewModel
 
 /**
- * Login Screen
- * Elegant login interface with phone/email and password
+ * Family Signup Screen
+ * Step 1 of Family Onboarding: Create Account
  */
 @Composable
-fun LoginScreen(
-    onNavigateToSignup: () -> Unit,
-    onNavigateToForgotPassword: () -> Unit,
-    onNavigateToHome: () -> Unit,
-    onNavigateToVerifyEmail: (String) -> Unit,
-    onNavigateToProfileSetup: () -> Unit,
-    onNavigateToFamilySignup: () -> Unit,
+fun FamilySignupScreen(
+    onNavigateToLogin: () -> Unit,
+    onNavigateToLink: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val colors = LocalExtendedColors.current
-    val authContext = LocalAuthContext.current
     val focusManager = LocalFocusManager.current
     
     // Form state
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    
+    var nameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
     
-    // Login state
-    val loginState by viewModel.loginState.collectAsState()
+    // State
+    val signupState by viewModel.familySignupState.collectAsState()
     
-    // Handle login result
-    LaunchedEffect(loginState) {
-        when (loginState) {
+    // Handle signup result
+    LaunchedEffect(signupState) {
+        when (signupState) {
             is NetworkResult.Success -> {
-                val user = (loginState as NetworkResult.Success).data
-                authContext.setUser(user!!)
-                viewModel.clearLoginState()
-                
-                if (user.onboardingCompleted) {
-                    onNavigateToHome()
-                } else {
-                    onNavigateToProfileSetup()
-                }
-            }
-            is NetworkResult.Error -> {
-                val error = loginState as NetworkResult.Error
-                if (error.message == "VERIFICATION_REQUIRED") {
-                    viewModel.clearLoginState()
-                    onNavigateToVerifyEmail(email)
-                }
+                viewModel.clearFamilyStates()
+                onNavigateToLink()
             }
             else -> {}
         }
@@ -93,30 +75,27 @@ fun LoginScreen(
                 .padding(AppSpacing.ScreenHorizontal),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(40.dp))
             
-            // Logo/Icon
-            Surface(
-                modifier = Modifier.size(80.dp),
-                shape = CustomShapes.Circle,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                tonalElevation = AppElevation.Level2
+            // Back button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
             ) {
-                Box(contentAlignment = Alignment.Center) {
+                IconButton(onClick = onNavigateToLogin) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "Logo",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(40.dp)
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = colors.textPrimary
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(AppSpacing.Large2x))
+            Spacer(modifier = Modifier.height(AppSpacing.Large))
             
-            // Welcome Text
+            // Header
             Text(
-                text = "Welcome Back",
+                text = "Join as Family",
                 style = MaterialTheme.typography.headlineLarge,
                 color = colors.textPrimary,
                 fontWeight = FontWeight.Bold
@@ -125,13 +104,32 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(AppSpacing.Small))
             
             Text(
-                text = "Sign in to continue your journey",
+                text = "Create an account to connect with your child",
                 style = MaterialTheme.typography.bodyLarge,
                 color = colors.textSecondary,
                 textAlign = TextAlign.Center
             )
             
             Spacer(modifier = Modifier.height(AppSpacing.ExtraLarge2x))
+            
+            // Name Input
+            AppTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    nameError = null
+                },
+                label = "Full Name",
+                placeholder = "Enter your full name",
+                isError = nameError != null,
+                errorMessage = nameError,
+                leadingIcon = Icons.Default.Person,
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                    onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down) }
+                )
+            )
+            
+            Spacer(modifier = Modifier.height(AppSpacing.Medium2x))
             
             // Email Input
             EmailTextField(
@@ -159,27 +157,31 @@ fun LoginScreen(
                 isError = passwordError != null,
                 errorMessage = passwordError,
                 keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                    onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down) }
+                )
+            )
+            
+            Spacer(modifier = Modifier.height(AppSpacing.Medium2x))
+            
+            // Confirm Password Input
+            PasswordTextField(
+                value = confirmPassword,
+                onValueChange = {
+                    confirmPassword = it
+                    confirmPasswordError = null
+                },
+                isError = confirmPasswordError != null,
+                errorMessage = confirmPasswordError,
+                label = "Confirm Password",
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(
                     onDone = { focusManager.clearFocus() }
                 )
             )
             
-            Spacer(modifier = Modifier.height(AppSpacing.Small2x))
-            
-            // Forgot Password
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                AppTextButton(
-                    text = "Forgot Password?",
-                    onClick = onNavigateToForgotPassword
-                )
-            }
-            
             Spacer(modifier = Modifier.height(AppSpacing.Large2x))
             
             // Error Message
-            if (loginState is NetworkResult.Error) {
+            if (signupState is NetworkResult.Error) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -199,7 +201,7 @@ fun LoginScreen(
                         )
                         Spacer(modifier = Modifier.width(AppSpacing.Small2x))
                         Text(
-                            text = (loginState as NetworkResult.Error).message ?: "Login failed",
+                            text = (signupState as NetworkResult.Error).message ?: "Signup failed",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -208,12 +210,17 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(AppSpacing.Medium2x))
             }
             
-            // Login Button
+            // Signup Button
             PrimaryButton(
-                text = "Login",
+                text = "Continue",
                 onClick = {
                     // Validate inputs
                     var isValid = true
+                    
+                    if (name.isEmpty()) {
+                        nameError = "Name is required"
+                        isValid = false
+                    }
                     
                     if (email.isEmpty()) {
                         emailError = "Email is required"
@@ -223,79 +230,49 @@ fun LoginScreen(
                         isValid = false
                     }
                     
-                    if (password.isEmpty()) {
-                        passwordError = "Password is required"
+                    val passwordValidation = ValidationUtils.validatePassword(password)
+                    if (!passwordValidation.isValid) {
+                        passwordError = passwordValidation.errorMessage
+                        isValid = false
+                    }
+                    
+                    if (confirmPassword.isEmpty()) {
+                        confirmPasswordError = "Please confirm your password"
+                        isValid = false
+                    } else if (password != confirmPassword) {
+                        confirmPasswordError = "Passwords do not match"
                         isValid = false
                     }
                     
                     if (isValid) {
-                        viewModel.login(email, password)
+                        viewModel.signupFamily(email, password, name)
                     }
                 },
-                loading = loginState is NetworkResult.Loading,
-                icon = Icons.Default.Login
+                loading = signupState is NetworkResult.Loading,
+                icon = Icons.Default.ArrowForward
             )
             
             Spacer(modifier = Modifier.height(AppSpacing.ExtraLarge))
             
-            // Divider with "OR"
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = colors.divider
-                )
-                Text(
-                    text = "OR",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.textTertiary,
-                    modifier = Modifier.padding(horizontal = AppSpacing.Medium2x)
-                )
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = colors.divider
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(AppSpacing.ExtraLarge))
-            
-            // Family Signup Link
-            TextButton(
-                onClick = onNavigateToFamilySignup,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(
-                    text = "Join as Family Member",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(AppSpacing.Large))
-
-            // Sign Up Link
+            // Login Link
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Don't have an account? ",
+                    text = "Already have an account? ",
                     style = MaterialTheme.typography.bodyLarge,
                     color = colors.textSecondary
                 )
                 Text(
-                    text = "Sign Up",
+                    text = "Login",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.clickable { onNavigateToSignup() }
+                    modifier = Modifier.clickable { onNavigateToLogin() }
                 )
             }
-            
-            Spacer(modifier = Modifier.height(AppSpacing.Large2x))
         }
     }
 }

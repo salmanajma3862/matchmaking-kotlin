@@ -208,3 +208,29 @@ data class SubscribeRequest(
     val duration: String, // "monthly", "yearly"
     val paymentMethod: String
 )
+
+// ==================== Family Requests ====================
+
+/**
+ * Signup Family Request
+ */
+data class SignupFamilyRequest(
+    val email: String,
+    val password: String,
+    val name: String
+)
+
+/**
+ * Link Family Request
+ */
+data class LinkFamilyRequest(
+    val inviteCode: String
+)
+
+/**
+ * Create Invite Request
+ */
+data class CreateInviteRequest(
+    val scope: List<String>,
+    val durationInHours: Int
+)

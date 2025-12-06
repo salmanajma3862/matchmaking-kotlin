@@ -365,4 +365,98 @@ class AuthRepository @Inject constructor(
     suspend fun isProfileComplete(): Boolean {
         return userPreferences.getIsProfileComplete()
     }
+
+    // ==================== Family Methods ====================
+
+    /**
+     * Signup Family
+     */
+    fun signupFamily(
+        email: String,
+        password: String,
+        name: String
+    ): Flow<NetworkResult<User>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val request = SignupFamilyRequest(email, password, name)
+            val response = authApiService.signupFamily(request)
+            if (response.isSuccessful && response.body() != null) {
+                val authResponse = response.body()!!
+                if (authResponse.success && authResponse.user != null) {
+                    authResponse.token?.let { userPreferences.saveAuthToken(it) }
+                    val user = authResponse.user
+                    userPreferences.saveAuthData(
+                        token = authResponse.token ?: "",
+                        refreshToken = null,
+                        userId = user.id,
+                        email = user.email ?: "",
+                        name = user.name,
+                        phone = user.phone ?: "",
+                        isEmailVerified = true,
+                        isProfileComplete = true
+                    )
+                    emit(NetworkResult.Success(user))
+                } else {
+                    emit(NetworkResult.Error(authResponse.message))
+                }
+            } else {
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+
+    /**
+     * Link Family
+     */
+    fun linkFamily(inviteCode: String): Flow<NetworkResult<Boolean>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val request = LinkFamilyRequest(inviteCode)
+            val response = authApiService.linkFamily(request)
+            if (response.isSuccessful) {
+                emit(NetworkResult.Success(true))
+            } else {
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+
+    /**
+     * Create Invite
+     */
+    fun createInvite(scope: List<String>, durationInHours: Int): Flow<NetworkResult<Any?>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val request = CreateInviteRequest(scope, durationInHours)
+            val response = authApiService.createInvite(request)
+            if (response.isSuccessful && response.body() != null) {
+                emit(NetworkResult.Success<Any?>(response.body()!!.data))
+            } else {
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+
+    /**
+     * Get Child Data
+     */
+    fun getChildData(): Flow<NetworkResult<Any?>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val response = authApiService.getChildData()
+            if (response.isSuccessful && response.body() != null) {
+                emit(NetworkResult.Success<Any?>(response.body()!!.data))
+            } else {
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
 }

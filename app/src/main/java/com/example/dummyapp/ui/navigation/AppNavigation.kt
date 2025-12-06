@@ -18,6 +18,7 @@ import com.example.dummyapp.ui.screens.messages.ChatScreen
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Signup : Screen("signup")
+    object FamilySignup : Screen("family_signup")
     object Main : Screen("main")
     object VerifyEmail : Screen("verify_email/{email}") {
         fun createRoute(email: String) = "verify_email/$email"
@@ -65,7 +66,8 @@ fun AppNavigation(
                     navController.navigate(Screen.ProfileSetup.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
-                }
+                },
+                onNavigateToFamilySignup = { navController.navigate(Screen.FamilySignup.route) }
             )
         }
         composable(Screen.Signup.route) {
@@ -73,6 +75,17 @@ fun AppNavigation(
                 onNavigateToLogin = { navController.popBackStack() },
                 onNavigateToVerifyEmail = { email -> 
                     navController.navigate(Screen.VerifyEmail.createRoute(email))
+                }
+            )
+        }
+        composable(Screen.FamilySignup.route) {
+            com.example.dummyapp.ui.screens.family.FamilySignupScreen(
+                onNavigateToLogin = { navController.popBackStack() },
+                onNavigateToLink = { 
+                    // After signup, user is logged in as family_unlinked, so go to Main which redirects to Link
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }

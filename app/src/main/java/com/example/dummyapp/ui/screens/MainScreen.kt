@@ -23,12 +23,43 @@ import androidx.navigation.NavController
 import com.example.dummyapp.ui.screens.matches.LikesScreen
 import com.example.dummyapp.ui.screens.matches.MatchScreen
 import com.example.dummyapp.ui.screens.messages.ConversationListScreen
+import androidx.compose.runtime.collectAsState
+import com.example.dummyapp.data.models.User
+import com.example.dummyapp.utils.NetworkResult
 
 @Composable
 fun MainScreen(
     navController: NavController,
-    onNavigateToProfileDetail: (String, String) -> Unit
+    onNavigateToProfileDetail: (String, String) -> Unit,
+    viewModel: com.example.dummyapp.viewmodel.AuthViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 ) {
+    val currentUserState by viewModel.currentUserState.collectAsState()
+    
+    // Check user role
+    val user = when (val state = currentUserState) {
+        is NetworkResult.Success -> state.data
+        else -> null
+    }
+    
+    if (user?.role == "family") {
+        com.example.dummyapp.ui.screens.family.FamilyDashboardScreen(
+            onNavigateToLogin = { 
+                // Navigation handled by AuthContext
+            }
+        )
+        return
+    }
+    
+    if (user?.role == "family_unlinked") {
+        com.example.dummyapp.ui.screens.family.FamilyLinkScreen(
+            onNavigateToDashboard = {
+                // Refresh user to update role
+                viewModel.fetchCurrentUser()
+            }
+        )
+        return
+    }
+
     var selectedItem by remember { mutableIntStateOf(0) }
     val items = listOf("Feed", "Likes", "Matches", "Messages", "Profile")
     val icons = listOf(Icons.Rounded.Home, Icons.Rounded.Favorite, Icons.Rounded.Star, Icons.Rounded.Email, Icons.Rounded.Person)

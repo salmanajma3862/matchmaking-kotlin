@@ -40,6 +40,21 @@ class AuthViewModel @Inject constructor(
     // Current User State
     private val _currentUserState = MutableStateFlow<NetworkResult<User>?>(null)
     val currentUserState: StateFlow<NetworkResult<User>?> = _currentUserState.asStateFlow()
+
+    // Family State
+    private val _familySignupState = MutableStateFlow<NetworkResult<User>?>(null)
+    val familySignupState: StateFlow<NetworkResult<User>?> = _familySignupState.asStateFlow()
+
+    private val _familyLinkState = MutableStateFlow<NetworkResult<Boolean>?>(null)
+    val familyLinkState: StateFlow<NetworkResult<Boolean>?> = _familyLinkState.asStateFlow()
+
+    private val _createInviteState = MutableStateFlow<NetworkResult<Any?>?>(null)
+    val createInviteState: StateFlow<NetworkResult<Any?>?> = _createInviteState.asStateFlow()
+
+    private val _childDataState = MutableStateFlow<NetworkResult<Any?>?>(null)
+    val childDataState: StateFlow<NetworkResult<Any?>?> = _childDataState.asStateFlow()
+
+
     
     init {
         fetchCurrentUser()
@@ -152,5 +167,46 @@ class AuthViewModel @Inject constructor(
                 // State update in AuthContext (observing userPreferences) should trigger navigation
             }
         }
+    }
+
+    // ==================== Family Methods ====================
+
+    fun signupFamily(email: String, password: String, name: String) {
+        viewModelScope.launch {
+            authRepository.signupFamily(email, password, name).collect { result ->
+                _familySignupState.value = result
+            }
+        }
+    }
+
+    fun linkFamily(inviteCode: String) {
+        viewModelScope.launch {
+            authRepository.linkFamily(inviteCode).collect { result ->
+                _familyLinkState.value = result
+            }
+        }
+    }
+
+    fun createInvite(scope: List<String>, durationInHours: Int) {
+        viewModelScope.launch {
+            authRepository.createInvite(scope, durationInHours).collect { result ->
+                _createInviteState.value = result
+            }
+        }
+    }
+
+    fun fetchChildData() {
+        viewModelScope.launch {
+            authRepository.getChildData().collect { result ->
+                _childDataState.value = result
+            }
+        }
+    }
+
+    fun clearFamilyStates() {
+        _familySignupState.value = null
+        _familyLinkState.value = null
+        _createInviteState.value = null
+        _childDataState.value = null
     }
 }

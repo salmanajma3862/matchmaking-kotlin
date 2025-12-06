@@ -54,6 +54,9 @@ data class User(
     // Auth & Account
     val phone: String? = null,
     val email: String? = null,
+    val role: String? = "user", // "user", "family_unlinked", "family", "admin"
+    val linkedChild: String? = null, // ID of linked child
+    val familyMembers: List<String>? = null, // IDs of family members
     val isEmailVerified: Boolean = false,
     val lastLoginAt: String? = null,
     

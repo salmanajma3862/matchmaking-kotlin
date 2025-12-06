@@ -80,4 +80,24 @@ interface AuthApiService {
     suspend fun refreshToken(
         @Body refreshToken: Map<String, String>
     ): Response<AuthResponse>
+
+    // ==================== Family Endpoints ====================
+
+    @POST("family/signup")
+    suspend fun signupFamily(
+        @Body request: SignupFamilyRequest
+    ): Response<AuthResponse>
+
+    @POST("family/link")
+    suspend fun linkFamily(
+        @Body request: LinkFamilyRequest
+    ): Response<ApiResponse<Any>>
+
+    @POST("family/invite")
+    suspend fun createInvite(
+        @Body request: CreateInviteRequest
+    ): Response<ApiResponse<Any>>
+
+    @GET("family/child-data")
+    suspend fun getChildData(): Response<ApiResponse<Any>>
 }
