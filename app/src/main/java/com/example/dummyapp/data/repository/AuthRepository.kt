@@ -1,6 +1,7 @@
 package com.example.dummyapp.data.repository
 
 import com.example.dummyapp.data.api.AuthApiService
+import com.example.dummyapp.data.models.FamilyChildData
 import com.example.dummyapp.data.models.InviteCode
 import com.example.dummyapp.data.models.User
 import com.example.dummyapp.data.models.request.*
@@ -449,12 +450,17 @@ class AuthRepository @Inject constructor(
     /**
      * Get Child Data
      */
-    fun getChildData(): Flow<NetworkResult<Any?>> = flow {
+    fun getChildData(): Flow<NetworkResult<FamilyChildData>> = flow {
         emit(NetworkResult.Loading())
         try {
             val response = authApiService.getChildData()
             if (response.isSuccessful && response.body() != null) {
-                emit(NetworkResult.Success<Any?>(response.body()!!.data))
+                val apiResponse = response.body()!!
+                if (apiResponse.success && apiResponse.data != null) {
+                    emit(NetworkResult.Success(apiResponse.data))
+                } else {
+                    emit(NetworkResult.Error(apiResponse.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+                }
             } else {
                 emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
             }

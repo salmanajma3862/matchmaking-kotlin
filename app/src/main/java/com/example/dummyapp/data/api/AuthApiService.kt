@@ -1,5 +1,6 @@
 package com.example.dummyapp.data.api
 
+import com.example.dummyapp.data.models.FamilyChildData
 import com.example.dummyapp.data.models.InviteCode
 import com.example.dummyapp.data.models.request.*
 import com.example.dummyapp.data.models.response.*
@@ -103,5 +104,5 @@ interface AuthApiService {
     suspend fun getMyInviteCodes(): Response<ApiResponse<List<InviteCode>>>
 
     @GET(Constants.Endpoints.FAMILY_CHILD_DATA)
-    suspend fun getChildData(): Response<ApiResponse<Any>>
+    suspend fun getChildData(): Response<ApiResponse<FamilyChildData>>
 }

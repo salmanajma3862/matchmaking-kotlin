@@ -57,6 +57,7 @@ data class User(
     val role: String? = "user", // "user", "family_unlinked", "family", "admin"
     val linkedChild: String? = null, // ID of linked child
     val familyMembers: List<String>? = null, // IDs of family members
+    val familyMode: FamilyMode? = null, // Family mode settings including permissions
     val isEmailVerified: Boolean = false,
     val lastLoginAt: String? = null,
     
@@ -153,3 +154,62 @@ data class Compatibility(
     val considerations: List<String>? = null
 )
 
+/**
+ * Family Mode Model - Contains permissions for family members
+ */
+data class FamilyMode(
+    val enabled: Boolean = false,
+    val familyRelation: String? = null,
+    val familyRelationDetail: String? = null,
+    val permissions: List<String>? = null // e.g., ["view_matches", "chat"]
+)
+
+/**
+ * Family Child Data Response - Data returned to family members
+ */
+data class FamilyChildData(
+    val permissions: List<String>,
+    val childProfile: ChildProfile,
+    val matches: List<FamilyMatch>?,
+    val conversations: List<FamilyConversation>?
+)
+
+data class ChildProfile(
+    val id: String,
+    val name: String,
+    val photo: String?,
+    val completeness: Int?
+)
+
+data class FamilyMatch(
+    val matchedAt: String?,
+    val compatibilityScore: Int?,
+    val user: FamilyMatchUser?
+)
+
+data class FamilyMatchUser(
+    val id: String,
+    val name: String,
+    val photo: String?,
+    val city: String?,
+    val profession: String?
+)
+
+data class FamilyConversation(
+    val id: String,
+    val participants: List<FamilyParticipant>?,
+    val lastMessage: FamilyLastMessage?,
+    val updatedAt: String?
+)
+
+data class FamilyParticipant(
+    val id: String,
+    val name: String,
+    val photo: String?
+)
+
+data class FamilyLastMessage(
+    val content: String?,
+    val type: String?,
+    val createdAt: String?
+)
