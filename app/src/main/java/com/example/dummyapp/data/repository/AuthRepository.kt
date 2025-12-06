@@ -374,11 +374,13 @@ class AuthRepository @Inject constructor(
     fun signupFamily(
         email: String,
         password: String,
-        name: String
+        name: String,
+        relation: String,
+        relationDetail: String?
     ): Flow<NetworkResult<User>> = flow {
         emit(NetworkResult.Loading())
         try {
-            val request = SignupFamilyRequest(email, password, name)
+            val request = SignupFamilyRequest(email, password, name, relation, relationDetail)
             val response = authApiService.signupFamily(request)
             if (response.isSuccessful && response.body() != null) {
                 val authResponse = response.body()!!

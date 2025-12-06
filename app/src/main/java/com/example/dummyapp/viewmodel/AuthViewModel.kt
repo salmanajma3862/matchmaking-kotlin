@@ -171,9 +171,9 @@ class AuthViewModel @Inject constructor(
 
     // ==================== Family Methods ====================
 
-    fun signupFamily(email: String, password: String, name: String) {
+    fun signupFamily(email: String, password: String, name: String, relation: String, relationDetail: String?) {
         viewModelScope.launch {
-            authRepository.signupFamily(email, password, name).collect { result ->
+            authRepository.signupFamily(email, password, name, relation, relationDetail).collect { result ->
                 _familySignupState.value = result
             }
         }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -546,6 +547,7 @@ fun InviteFamilyDialog(
 ) {
     var duration by remember { mutableStateOf(24) } // Hours
     var viewMatches by remember { mutableStateOf(true) }
+    var takePartInChats by remember { mutableStateOf(false) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -581,13 +583,23 @@ fun InviteFamilyDialog(
                         Checkbox(checked = viewMatches, onCheckedChange = { viewMatches = it })
                         Text("View Matches")
                     }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = takePartInChats, onCheckedChange = { takePartInChats = it })
+                        Text("Take Part in Chats")
+                    }
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("Expires In", fontWeight = FontWeight.Bold)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Use FlowRow or Scrollable Row if many items, for now Row with scroll
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
                         FilterChip(selected = duration == 1, onClick = { duration = 1 }, label = { Text("1 Hr") })
                         FilterChip(selected = duration == 24, onClick = { duration = 24 }, label = { Text("24 Hrs") })
                         FilterChip(selected = duration == 168, onClick = { duration = 168 }, label = { Text("1 Wk") })
+                        FilterChip(selected = duration == 720, onClick = { duration = 720 }, label = { Text("1 Mon") })
+                        FilterChip(selected = duration == -1, onClick = { duration = -1 }, label = { Text("Lifetime") })
                     }
                     
                     if (inviteState is NetworkResult.Error) {
@@ -611,7 +623,12 @@ fun InviteFamilyDialog(
                 }
             } else {
                 Button(
-                    onClick = { onCreateInvite(listOf("view_matches"), duration) },
+                    onClick = { 
+                        val permissions = mutableListOf<String>()
+                        if (viewMatches) permissions.add("view_matches")
+                        if (takePartInChats) permissions.add("chat")
+                        onCreateInvite(permissions, duration) 
+                    },
                     enabled = inviteState !is NetworkResult.Loading
                 ) {
                     if (inviteState is NetworkResult.Loading) {
