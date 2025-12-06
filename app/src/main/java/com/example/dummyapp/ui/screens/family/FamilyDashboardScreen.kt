@@ -39,6 +39,7 @@ import java.util.*
 fun FamilyDashboardScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToChat: ((String) -> Unit)? = null,
+    onNavigateToProfile: ((String) -> Unit)? = null,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val childDataState by viewModel.childDataState.collectAsState()
@@ -170,7 +171,10 @@ fun FamilyDashboardScreen(
                             // Tab Content
                             when {
                                 tabs.getOrNull(selectedTab) == "Matches" && hasViewMatches -> {
-                                    MatchesList(matches = data.matches ?: emptyList())
+                                    MatchesList(
+                                        matches = data.matches ?: emptyList(),
+                                        onMatchClick = onNavigateToProfile
+                                    )
                                 }
                                 tabs.getOrNull(selectedTab) == "Chats" && hasChat -> {
                                     ConversationsList(
@@ -291,7 +295,10 @@ fun ChildProfileHeader(childProfile: ChildProfile) {
 }
 
 @Composable
-fun MatchesList(matches: List<FamilyMatch>) {
+fun MatchesList(
+    matches: List<FamilyMatch>,
+    onMatchClick: ((String) -> Unit)? = null
+) {
     if (matches.isEmpty()) {
         EmptyState(
             icon = Icons.Default.Favorite,
@@ -305,17 +312,24 @@ fun MatchesList(matches: List<FamilyMatch>) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(matches) { match ->
-                MatchCard(match = match)
+                MatchCard(
+                    match = match,
+                    onClick = { match.user?.id?.let { onMatchClick?.invoke(it) } }
+                )
             }
         }
     }
 }
 
 @Composable
-fun MatchCard(match: FamilyMatch) {
+fun MatchCard(
+    match: FamilyMatch,
+    onClick: () -> Unit = {}
+) {
     val user = match.user ?: return
 
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),

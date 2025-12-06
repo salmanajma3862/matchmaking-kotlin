@@ -45,6 +45,10 @@ fun MainScreen(
         com.example.dummyapp.ui.screens.family.FamilyDashboardScreen(
             onNavigateToLogin = { 
                 // Navigation handled by AuthContext
+            },
+            onNavigateToProfile = { userId ->
+                // Navigate to profile detail in view-only mode (matchStatus = "none" hides action buttons)
+                navController.navigate(com.example.dummyapp.ui.navigation.Screen.ProfileDetail.createRoute(userId, "none"))
             }
         )
         return
