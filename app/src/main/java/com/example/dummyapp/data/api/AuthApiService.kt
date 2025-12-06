@@ -83,21 +83,21 @@ interface AuthApiService {
 
     // ==================== Family Endpoints ====================
 
-    @POST("family/signup")
+    @POST(Constants.Endpoints.FAMILY_SIGNUP)
     suspend fun signupFamily(
         @Body request: SignupFamilyRequest
     ): Response<AuthResponse>
 
-    @POST("family/link")
+    @POST(Constants.Endpoints.FAMILY_LINK)
     suspend fun linkFamily(
         @Body request: LinkFamilyRequest
     ): Response<ApiResponse<Any>>
 
-    @POST("family/invite")
+    @POST(Constants.Endpoints.FAMILY_INVITE)
     suspend fun createInvite(
         @Body request: CreateInviteRequest
     ): Response<ApiResponse<Any>>
 
-    @GET("family/child-data")
+    @GET(Constants.Endpoints.FAMILY_CHILD_DATA)
     suspend fun getChildData(): Response<ApiResponse<Any>>
 }

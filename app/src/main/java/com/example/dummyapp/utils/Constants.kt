@@ -59,6 +59,13 @@ object Constants {
         const val NOTIFICATION_BASE = "api/notifications"
         const val GET_NOTIFICATIONS = "$NOTIFICATION_BASE"
         const val MARK_READ = "$NOTIFICATION_BASE/{id}/read"
+
+        // Family endpoints
+        const val FAMILY_BASE = "api/family"
+        const val FAMILY_SIGNUP = "$FAMILY_BASE/signup"
+        const val FAMILY_INVITE = "$FAMILY_BASE/invite"
+        const val FAMILY_LINK = "$FAMILY_BASE/link"
+        const val FAMILY_CHILD_DATA = "$FAMILY_BASE/child-data"
     }
     
     // ==================== Network Configuration ====================
