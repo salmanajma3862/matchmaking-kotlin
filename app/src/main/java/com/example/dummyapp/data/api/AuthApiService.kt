@@ -105,4 +105,10 @@ interface AuthApiService {
 
     @GET(Constants.Endpoints.FAMILY_CHILD_DATA)
     suspend fun getChildData(): Response<ApiResponse<FamilyChildData>>
+
+    @DELETE("${Constants.Endpoints.FAMILY_BASE}/invite/{codeId}")
+    suspend fun deleteInviteCode(@Path("codeId") codeId: String): Response<ApiResponse<Any>>
+
+    @PATCH("${Constants.Endpoints.FAMILY_BASE}/invite/{codeId}/deactivate")
+    suspend fun deactivateInviteCode(@Path("codeId") codeId: String): Response<ApiResponse<Any>>
 }

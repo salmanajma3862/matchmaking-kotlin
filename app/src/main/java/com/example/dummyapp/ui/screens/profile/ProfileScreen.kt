@@ -49,33 +49,10 @@ fun ProfileScreen(
     onHelp: () -> Unit,
     onAbout: () -> Unit,
     onLogout: () -> Unit,
-    onViewInviteCodes: () -> Unit = {}
+    onInviteFamily: () -> Unit = {}
 ) {
     val currentUserState by viewModel.currentUserState.collectAsState()
-    val createInviteState by viewModel.createInviteState.collectAsState()
     val scrollState = rememberScrollState()
-    
-    var showInviteDialog by remember { mutableStateOf(false) }
-    
-    // Handle invite creation result
-    LaunchedEffect(createInviteState) {
-        if (createInviteState is NetworkResult.Success) {
-            // Ideally show success message or copy code
-            // For now, we rely on the dialog showing the code if we had the response data here
-            // But the ViewModel updates state, we need to read it
-        }
-    }
-
-    if (showInviteDialog) {
-        InviteFamilyDialog(
-            onDismiss = { showInviteDialog = false },
-            onCreateInvite = { scope, duration ->
-                viewModel.createInvite(scope, duration)
-            },
-            inviteState = createInviteState,
-            onClearState = { viewModel.clearFamilyStates() }
-        )
-    }
 
     val user = when (val state = currentUserState) {
         is NetworkResult.Success -> state.data
@@ -287,18 +264,10 @@ fun ProfileScreen(
                 MenuItem(
                     icon = Icons.Default.GroupAdd,
                     label = "Invite Family",
-                    subtitle = "Give access to your parents",
-                    onClick = { showInviteDialog = true },
+                    subtitle = "Create & manage family invite codes",
+                    onClick = onInviteFamily,
                     iconTint = Color(0xFF059669), // Emerald-600
                     iconBgColor = Color(0xFFECFDF5) // Emerald-50
-                )
-                MenuItem(
-                    icon = Icons.Default.QrCode,
-                    label = "My Invite Codes",
-                    subtitle = "View and manage your generated codes",
-                    onClick = onViewInviteCodes,
-                    iconTint = Color(0xFF0891B2), // Cyan-600
-                    iconBgColor = Color(0xFFECFEFF) // Cyan-50
                 )
             }
 
@@ -553,111 +522,4 @@ private fun calculateUserAge(dobString: String?): Int {
     }
 }
 
-@Composable
-fun InviteFamilyDialog(
-    onDismiss: () -> Unit,
-    onCreateInvite: (List<String>, Int) -> Unit,
-    inviteState: NetworkResult<Any?>?,
-    onClearState: () -> Unit
-) {
-    var duration by remember { mutableStateOf(24) } // Hours
-    
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Invite Family Member") },
-        text = {
-            Column {
-                if (inviteState is NetworkResult.Success) {
-                    val data = inviteState.data // Need to parse this
-                    // Assuming data has 'code' field. 
-                    // Since we can't easily parse Any here without Gson, let's just show a success message
-                    // In real app, we'd cast or use a data class
-                    Text("Invite Code Generated!", fontWeight = FontWeight.Bold, color = Color(0xFF059669))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Please check your email or copy the code from the response (Simulated).")
-                    // Placeholder for code display
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFFF3F4F6), RoundedCornerShape(8.dp))
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // We need to access the code from the response map
-                        // For now, just static text as we can't reflect easily
-                        Text("CODE123", style = MaterialTheme.typography.headlineMedium, letterSpacing = 4.sp)
-                    }
-                } else {
-                    Text("Generate a secure code for your family member to access your profile.")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text("Permissions", fontWeight = FontWeight.Bold)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = null,
-                            tint = Color(0xFFEC4899),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("View Matches", color = Color(0xFF374151))
-                    }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Expires In", fontWeight = FontWeight.Bold)
-                    // Use FlowRow or Scrollable Row if many items, for now Row with scroll
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.horizontalScroll(rememberScrollState())
-                    ) {
-                        FilterChip(selected = duration == 1, onClick = { duration = 1 }, label = { Text("1 Hr") })
-                        FilterChip(selected = duration == 24, onClick = { duration = 24 }, label = { Text("24 Hrs") })
-                        FilterChip(selected = duration == 168, onClick = { duration = 168 }, label = { Text("1 Wk") })
-                        FilterChip(selected = duration == 720, onClick = { duration = 720 }, label = { Text("1 Mon") })
-                        FilterChip(selected = duration == -1, onClick = { duration = -1 }, label = { Text("Lifetime") })
-                    }
-                    
-                    if (inviteState is NetworkResult.Error) {
-                        Text(
-                            text = inviteState.message ?: "Error",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            if (inviteState is NetworkResult.Success) {
-                TextButton(onClick = { 
-                    onClearState()
-                    onDismiss() 
-                }) {
-                    Text("Done")
-                }
-            } else {
-                Button(
-                    onClick = { 
-                        // Only view_matches scope is allowed for now
-                        onCreateInvite(listOf("view_matches"), duration) 
-                    },
-                    enabled = inviteState !is NetworkResult.Loading
-                ) {
-                    if (inviteState is NetworkResult.Loading) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
-                    } else {
-                        Text("Generate Code")
-                    }
-                }
-            }
-        },
-        dismissButton = {
-            if (inviteState !is NetworkResult.Success) {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel")
-                }
-            }
-        }
-    )
-}
+

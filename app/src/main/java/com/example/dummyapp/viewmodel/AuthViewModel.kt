@@ -216,11 +216,45 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun deleteInviteCode(codeId: String, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            authRepository.deleteInviteCode(codeId).collect { result ->
+                when (result) {
+                    is NetworkResult.Success -> {
+                        fetchMyInviteCodes() // Refresh the list
+                        onComplete(true)
+                    }
+                    is NetworkResult.Error -> onComplete(false)
+                    is NetworkResult.Loading -> { /* Ignore */ }
+                }
+            }
+        }
+    }
+
+    fun deactivateInviteCode(codeId: String, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            authRepository.deactivateInviteCode(codeId).collect { result ->
+                when (result) {
+                    is NetworkResult.Success -> {
+                        fetchMyInviteCodes() // Refresh the list
+                        onComplete(true)
+                    }
+                    is NetworkResult.Error -> onComplete(false)
+                    is NetworkResult.Loading -> { /* Ignore */ }
+                }
+            }
+        }
+    }
+
     fun clearFamilyStates() {
         _familySignupState.value = null
         _familyLinkState.value = null
         _createInviteState.value = null
         _childDataState.value = null
-        _myInviteCodesState.value = null
+        // Note: Do NOT clear _myInviteCodesState here - it breaks the UI refresh
+    }
+
+    fun clearCreateInviteState() {
+        _createInviteState.value = null
     }
 }

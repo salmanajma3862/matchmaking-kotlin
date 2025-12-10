@@ -119,7 +119,7 @@ fun MainScreen(
                     onLogout = {
                         // Navigation back to login is handled by AuthContext in MainActivity
                     },
-                    onViewInviteCodes = { navController.navigate(com.example.dummyapp.ui.navigation.Screen.InviteCodes.route) }
+                    onInviteFamily = { navController.navigate(com.example.dummyapp.ui.navigation.Screen.InviteFamily.route) }
                 )
             }
         }

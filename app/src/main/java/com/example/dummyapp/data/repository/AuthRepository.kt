@@ -490,4 +490,38 @@ class AuthRepository @Inject constructor(
             emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
         }
     }
+
+    /**
+     * Delete Invite Code
+     */
+    fun deleteInviteCode(codeId: String): Flow<NetworkResult<Boolean>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val response = authApiService.deleteInviteCode(codeId)
+            if (response.isSuccessful) {
+                emit(NetworkResult.Success(true))
+            } else {
+                emit(NetworkResult.Error(response.message() ?: "Failed to delete invite code"))
+            }
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+
+    /**
+     * Deactivate Invite Code
+     */
+    fun deactivateInviteCode(codeId: String): Flow<NetworkResult<Boolean>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val response = authApiService.deactivateInviteCode(codeId)
+            if (response.isSuccessful) {
+                emit(NetworkResult.Success(true))
+            } else {
+                emit(NetworkResult.Error(response.message() ?: "Failed to deactivate invite code"))
+            }
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
 }
