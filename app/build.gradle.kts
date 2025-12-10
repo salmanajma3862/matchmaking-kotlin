@@ -7,13 +7,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.dummyapp"
+    namespace = "com.salmanajmal.ziya"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.dummyapp"
+        applicationId = "com.salmanajmal.ziya"
         minSdk = 21
         targetSdk = 36
         versionCode = 1
