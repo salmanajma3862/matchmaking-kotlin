@@ -231,7 +231,7 @@ fun ProfileScreen(
         }
 
         // Menu Sections
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
             
             // Account Section
             MenuSection(title = "ACCOUNT") {
@@ -421,16 +421,16 @@ fun MenuSection(title: String, content: @Composable () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(16.dp))
-            .padding(vertical = 8.dp)
+            .padding(top = 8.dp)
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelSmall,
             color = Color.Gray,
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 1.sp,
+            modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 12.dp)
         )
-        HorizontalDivider(color = Color(0xFFF3F4F6))
         content()
     }
 }
@@ -445,69 +445,75 @@ fun MenuItem(
     iconBgColor: Color,
     badgeCount: Int = 0
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        onClick = onClick,
+        color = Color.Transparent,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .size(40.dp)
-                .background(iconBgColor, CircleShape),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(20.dp)
-            )
-            if (badgeCount > 0) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(x = 4.dp, y = (-4).dp)
-                        .size(16.dp)
-                        .background(Color.Red, CircleShape)
-                        .border(2.dp, Color.White, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = badgeCount.toString(),
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(iconBgColor, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(22.dp)
+                )
+                if (badgeCount > 0) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 4.dp, y = (-4).dp)
+                            .size(18.dp)
+                            .background(Color.Red, CircleShape)
+                            .border(2.dp, Color.White, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = badgeCount.toString(),
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
-        }
-        
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF111827), // Gray-900
-                fontWeight = FontWeight.Medium
+            
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFF111827), // Gray-900
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF9CA3AF) // Gray-400
+                )
+            }
+            
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = Color(0xFFD1D5DB), // Gray-300
+                modifier = Modifier.size(24.dp)
             )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF6B7280) // Gray-500
-            )
         }
-        
-        Icon(
-            imageVector = Icons.Default.ChevronRight,
-            contentDescription = null,
-            tint = Color(0xFF9CA3AF), // Gray-400
-            modifier = Modifier.size(20.dp)
-        )
     }
 }
 
