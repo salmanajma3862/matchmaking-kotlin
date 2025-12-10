@@ -43,17 +43,39 @@ fun MessageBubble(
 ) {
     val pinkColor = Color(0xFFEC4899) // Pink-500
     val roseColor = Color(0xFFF43F5E) // Rose-500
+    val purpleColor = Color(0xFF8B5CF6) // Violet-500 for family
+    val indigoColor = Color(0xFF6366F1) // Indigo-500 for family
     var showMenu by remember { mutableStateOf(false) }
     
-    val bubbleBrush = if (isMe) {
-        androidx.compose.ui.graphics.Brush.horizontalGradient(
-            colors = listOf(pinkColor, roseColor)
-        )
-    } else {
-        androidx.compose.ui.graphics.SolidColor(Color(0xFFF3F4F6)) // Gray-100
+    // Determine if this message is from a family member
+    val isFamilyMessage = message.isFamilyParticipant
+    
+    val bubbleBrush = when {
+        isFamilyMessage && isMe -> {
+            // Family member's own messages - solid purple
+            androidx.compose.ui.graphics.SolidColor(purpleColor)
+        }
+        isMe -> {
+            // Regular user's own messages - pink/rose gradient
+            androidx.compose.ui.graphics.Brush.horizontalGradient(
+                colors = listOf(pinkColor, roseColor)
+            )
+        }
+        isFamilyMessage -> {
+            // Family member's messages received - light purple
+            androidx.compose.ui.graphics.SolidColor(Color(0xFFEDE9FE)) // Violet-100
+        }
+        else -> {
+            // Regular messages received - gray
+            androidx.compose.ui.graphics.SolidColor(Color(0xFFF3F4F6)) // Gray-100
+        }
     }
     
-    val textColor = if (isMe) Color.White else Color(0xFF111827) // Gray-900
+    val textColor = when {
+        isMe -> Color.White
+        isFamilyMessage -> Color(0xFF4C1D95) // Violet-900 for family received
+        else -> Color(0xFF111827) // Gray-900
+    }
     
     val shape = if (isMe) {
         RoundedCornerShape(topStart = 16.dp, topEnd = 4.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
@@ -96,6 +118,17 @@ fun MessageBubble(
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 Column {
+                    // Family member label
+                    if (isFamilyMessage && message.familyRelation != null) {
+                        Text(
+                            text = message.familyRelation.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isMe) Color.White.copy(alpha = 0.8f) else purpleColor,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                    
                     // Replied Message Context
                     if (message.replyTo != null) {
                         Row(

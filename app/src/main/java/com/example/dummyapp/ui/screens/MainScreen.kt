@@ -46,6 +46,9 @@ fun MainScreen(
             onNavigateToLogin = { 
                 // Navigation handled by AuthContext
             },
+            onNavigateToChat = { conversationId ->
+                navController.navigate(com.example.dummyapp.ui.navigation.Screen.Chat.createRoute(conversationId))
+            },
             onNavigateToProfile = { userId ->
                 // Navigate to profile detail in view-only mode (matchStatus = "none" hides action buttons)
                 navController.navigate(com.example.dummyapp.ui.navigation.Screen.ProfileDetail.createRoute(userId, "none"))

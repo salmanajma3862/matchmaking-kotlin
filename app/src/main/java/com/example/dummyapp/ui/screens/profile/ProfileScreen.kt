@@ -555,8 +555,6 @@ fun InviteFamilyDialog(
     onClearState: () -> Unit
 ) {
     var duration by remember { mutableStateOf(24) } // Hours
-    var viewMatches by remember { mutableStateOf(true) }
-    var takePartInChats by remember { mutableStateOf(false) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -589,12 +587,14 @@ fun InviteFamilyDialog(
                     
                     Text("Permissions", fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = viewMatches, onCheckedChange = { viewMatches = it })
-                        Text("View Matches")
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = takePartInChats, onCheckedChange = { takePartInChats = it })
-                        Text("Take Part in Chats")
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = null,
+                            tint = Color(0xFFEC4899),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("View Matches", color = Color(0xFF374151))
                     }
                     
                     Spacer(modifier = Modifier.height(8.dp))
@@ -633,10 +633,8 @@ fun InviteFamilyDialog(
             } else {
                 Button(
                     onClick = { 
-                        val permissions = mutableListOf<String>()
-                        if (viewMatches) permissions.add("view_matches")
-                        if (takePartInChats) permissions.add("chat")
-                        onCreateInvite(permissions, duration) 
+                        // Only view_matches scope is allowed for now
+                        onCreateInvite(listOf("view_matches"), duration) 
                     },
                     enabled = inviteState !is NetworkResult.Loading
                 ) {

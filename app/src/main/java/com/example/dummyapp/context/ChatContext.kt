@@ -93,9 +93,12 @@ class ChatContextManager(
         val conversation = _chatState.value.conversations.find { it.id == conversationId }
         _chatState.value = _chatState.value.copy(currentConversation = conversation, messages = emptyList())
         
+        // Always fetch messages and join room, even if conversation not in local list
+        // This supports family members who access conversations from FamilyDashboard
+        chatRepository.joinConversation(conversationId)
+        fetchMessages(conversationId)
+        
         if (conversation != null) {
-            chatRepository.joinConversation(conversationId)
-            fetchMessages(conversationId)
             markAsRead(conversationId)
         }
     }

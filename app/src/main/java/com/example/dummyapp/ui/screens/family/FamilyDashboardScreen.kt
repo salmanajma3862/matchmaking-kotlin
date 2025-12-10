@@ -133,7 +133,6 @@ fun FamilyDashboardScreen(
                 } else {
                     val permissions = data.permissions
                     val hasViewMatches = permissions.contains("view_matches")
-                    val hasChat = permissions.contains("chat")
 
                     Column(
                         modifier = Modifier
@@ -143,73 +142,39 @@ fun FamilyDashboardScreen(
                         // Child Profile Header
                         ChildProfileHeader(childProfile = data.childProfile)
 
-                        // Permission Tabs
-                        val tabs = mutableListOf<String>()
-                        if (hasViewMatches) tabs.add("Matches")
-                        if (hasChat) tabs.add("Chats")
-
-                        if (tabs.isNotEmpty()) {
-                            TabRow(
-                                selectedTabIndex = selectedTab.coerceIn(0, tabs.size - 1),
-                                containerColor = Color.White,
-                                contentColor = Color(0xFFEC4899)
-                            ) {
-                                tabs.forEachIndexed { index, title ->
-                                    Tab(
-                                        selected = selectedTab == index,
-                                        onClick = { selectedTab = index },
-                                        text = {
-                                            Text(
-                                                text = title,
-                                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
-                                            )
-                                        }
-                                    )
-                                }
-                            }
-
-                            // Tab Content
-                            when {
-                                tabs.getOrNull(selectedTab) == "Matches" && hasViewMatches -> {
-                                    MatchesList(
-                                        matches = data.matches ?: emptyList(),
-                                        onMatchClick = onNavigateToProfile
-                                    )
-                                }
-                                tabs.getOrNull(selectedTab) == "Chats" && hasChat -> {
-                                    ConversationsList(
-                                        conversations = data.conversations ?: emptyList(),
-                                        onConversationClick = onNavigateToChat
-                                    )
-                                }
-                            }
+                        // Only show matches (chat feature disabled for family members)
+                        if (hasViewMatches) {
+                            MatchesList(
+                                matches = data.matches ?: emptyList(),
+                                onMatchClick = onNavigateToProfile
+                            )
                         } else {
                             // No permissions
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(64.dp),
-                                    tint = Color(0xFF9CA3AF)
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "No permissions granted",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = Color(0xFF6B7280)
-                                )
-                                Text(
-                                    text = "Ask the user to grant you access to view their data.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFF9CA3AF),
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
-                                )
-                            }
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(64.dp),
+                                        tint = Color(0xFF9CA3AF)
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "No permissions granted",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = Color(0xFF6B7280)
+                                    )
+                                    Text(
+                                        text = "Ask the user to grant you access to view their data.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color(0xFF9CA3AF),
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
+                                    )
+                                }
                             }
                         }
                     }

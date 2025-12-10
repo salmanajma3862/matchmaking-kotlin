@@ -13,6 +13,8 @@ data class Message(
     val replyTo: Message? = null,
     val isEdited: Boolean = false,
     val isDeletedForEveryone: Boolean = false,
+    val isFamilyParticipant: Boolean = false,
+    val familyRelation: String? = null,
     val createdAt: String, // ISO Date string
     val updatedAt: String,
     @Transient val isSending: Boolean = false
