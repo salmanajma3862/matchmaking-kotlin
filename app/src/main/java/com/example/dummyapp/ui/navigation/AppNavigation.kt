@@ -1,6 +1,7 @@
 package com.example.dummyapp.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -152,7 +153,15 @@ fun AppNavigation(
             )
         }
         composable(Screen.Settings.route) { com.example.dummyapp.ui.screens.profile.SettingsScreen() }
-        composable(Screen.EditProfile.route) { com.example.dummyapp.ui.screens.profile.EditProfileScreen() }
+        composable(Screen.EditProfile.route) {
+            val authViewModel: com.example.dummyapp.viewmodel.AuthViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val currentUserState = authViewModel.currentUserState.collectAsState()
+            val user = (currentUserState.value as? com.example.dummyapp.utils.NetworkResult.Success)?.data
+            com.example.dummyapp.ui.screens.profile.EditProfileScreen(
+                user = user,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
         composable(Screen.Notifications.route) { com.example.dummyapp.ui.screens.profile.NotificationsScreen() }
         composable(Screen.Privacy.route) { com.example.dummyapp.ui.screens.profile.PrivacyScreen() }
         composable(Screen.Subscription.route) { com.example.dummyapp.ui.screens.profile.SubscriptionScreen() }

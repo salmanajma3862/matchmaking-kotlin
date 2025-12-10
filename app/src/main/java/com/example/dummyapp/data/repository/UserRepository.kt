@@ -97,11 +97,11 @@ class UserRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 val updateResponse = response.body()!!
                 
-                if (updateResponse.success) {
+                if (updateResponse.success && updateResponse.data != null) {
                     // Update local user name if changed
                     request.name?.let { userPreferences.saveUserName(it) }
                     
-                    emit(NetworkResult.Success(updateResponse.user))
+                    emit(NetworkResult.Success(updateResponse.data))
                 } else {
                     emit(NetworkResult.Error(updateResponse.message))
                 }

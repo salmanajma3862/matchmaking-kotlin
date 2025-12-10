@@ -136,7 +136,9 @@ data class UpdateProfileRequest(
     val dietPreference: String? = null,
     val familyBackground: String? = null,
     val numberOfSiblings: Int? = null,
-    val livingWithFamily: Boolean? = null
+    val livingWithFamily: Boolean? = null,
+    val intention: String? = null,
+    val readyForMarriageTimeframe: String? = null
 )
 
 // ==================== Match & Swipe Requests ====================

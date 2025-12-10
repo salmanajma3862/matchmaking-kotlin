@@ -69,7 +69,9 @@ data class UserProfileResponse(
 data class UpdateProfileResponse(
     val success: Boolean,
     val message: String,
-    val user: User
+    val data: User? = null,
+    val code: String? = null,
+    val daysRemaining: Int? = null
 )
 
 /**
