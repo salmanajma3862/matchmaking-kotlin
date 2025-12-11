@@ -137,4 +137,15 @@ object NetworkModule {
     fun provideSwipeApiService(retrofit: Retrofit): SwipeApiService {
         return retrofit.create(SwipeApiService::class.java)
     }
+    
+    /**
+     * Provide NotificationHelper for push notification handling
+     */
+    @Provides
+    @Singleton
+    fun provideNotificationHelper(
+        @ApplicationContext context: Context
+    ): com.salmanajmal.ziya.utils.NotificationHelper {
+        return com.salmanajmal.ziya.utils.NotificationHelper(context)
+    }
 }

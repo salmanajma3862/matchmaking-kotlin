@@ -49,18 +49,24 @@ interface NotificationApiService {
     suspend fun deleteAllNotifications(): Response<ApiResponse<Any>>
     
     /**
-     * Register device for push notifications
+     * Register device for push notifications (FCM token)
      */
-    @POST("${Constants.Endpoints.NOTIFICATION_BASE}/device")
-    suspend fun registerDevice(
-        @Body deviceInfo: Map<String, String>
+    @POST("/api/notifications/register")
+    suspend fun registerPushToken(
+        @Body body: RegisterPushTokenRequest
     ): Response<ApiResponse<Any>>
     
     /**
-     * Unregister device
+     * Unregister device from push notifications
      */
-    @DELETE("${Constants.Endpoints.NOTIFICATION_BASE}/device/{token}")
-    suspend fun unregisterDevice(
-        @Path("token") deviceToken: String
-    ): Response<ApiResponse<Any>>
+    @DELETE("/api/notifications/unregister")
+    suspend fun unregisterPushToken(): Response<ApiResponse<Any>>
 }
+
+/**
+ * Request body for registering FCM push token
+ */
+data class RegisterPushTokenRequest(
+    val fcmToken: String
+)
+

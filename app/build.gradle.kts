@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     id("kotlin-kapt")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -69,6 +70,10 @@ dependencies {
     implementation(libs.okhttp.logging.interceptor)
 
     implementation("io.socket:socket.io-client:2.1.0")
+
+    // Firebase Cloud Messaging for push notifications
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

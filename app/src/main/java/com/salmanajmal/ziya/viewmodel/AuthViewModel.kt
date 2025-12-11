@@ -20,7 +20,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val notificationRepository: com.salmanajmal.ziya.data.repository.NotificationRepository
 ) : ViewModel() {
     
     // Login State
@@ -83,6 +84,26 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.login(email, password).collect { result ->
                 _loginState.value = result
+                
+                // Register FCM token after successful login
+                if (result is NetworkResult.Success) {
+                    registerPushToken()
+                }
+            }
+        }
+    }
+    
+    /**
+     * Register FCM push token with backend
+     * Called automatically after successful login
+     */
+    private fun registerPushToken() {
+        viewModelScope.launch {
+            try {
+                notificationRepository.registerFcmToken()
+            } catch (e: Exception) {
+                // Log but don't fail login if push registration fails
+                android.util.Log.e("AuthViewModel", "Failed to register push token", e)
             }
         }
     }
@@ -167,6 +188,13 @@ class AuthViewModel @Inject constructor(
      */
     fun performLogout() {
         viewModelScope.launch {
+            // Unregister push token before logout
+            try {
+                notificationRepository.unregisterFcmToken()
+            } catch (e: Exception) {
+                android.util.Log.e("AuthViewModel", "Failed to unregister push token", e)
+            }
+            
             authRepository.logout().collect {
                 // Logout successful (or at least local data cleared)
                 // State update in AuthContext (observing userPreferences) should trigger navigation

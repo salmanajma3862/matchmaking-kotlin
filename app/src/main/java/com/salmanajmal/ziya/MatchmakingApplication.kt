@@ -1,7 +1,9 @@
 package com.salmanajmal.ziya
 
 import android.app.Application
+import com.salmanajmal.ziya.utils.NotificationHelper
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 /**
  * Application Class
@@ -11,10 +13,17 @@ import dagger.hilt.android.HiltAndroidApp
 @HiltAndroidApp
 class MatchmakingApplication : Application() {
     
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
+    
     override fun onCreate() {
         super.onCreate()
         
         // Initialize app-wide components here
         println("🚀 Matchmaking App Started")
+        
+        // Create notification channels for Android 8.0+
+        notificationHelper.createNotificationChannels()
     }
 }
+

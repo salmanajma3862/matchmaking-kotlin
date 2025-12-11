@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "598523411554",
+    "project_id": "matchmakingapp-11050",
+    "storage_bucket": "matchmakingapp-11050.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:598523411554:android:082a1451a9371c026e653b",
+        "android_client_info": {
+          "package_name": "com.salmanajmal.ziya"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYD0Ed0H2CXee05ElGi-dPAJq7imGhijo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
