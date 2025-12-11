@@ -31,6 +31,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun MessageBubble(
@@ -121,7 +127,10 @@ fun MessageBubble(
                     }
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Column {
+            Box {
+                    Column(
+                        modifier = Modifier.widthIn(min = 60.dp)
+                    ) {
                     // Family member label
                     if (isFamilyMessage && message.familyRelation != null) {
                         Text(
@@ -169,11 +178,22 @@ fun MessageBubble(
                     }
 
                     if (message.isDeletedForEveryone) {
-                        Text(
-                            text = "This message was deleted",
-                            color = textColor.copy(alpha = 0.6f),
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                        )
+                        Row(
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            Text(
+                                text = "This message was deleted",
+                                color = textColor.copy(alpha = 0.6f),
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = formatTime(message.createdAt),
+                                color = if (isMe) Color.White.copy(alpha = 0.7f) else Color(0xFF9CA3AF),
+                                fontSize = 10.sp
+                            )
+                        }
                     } else {
                         if (message.media?.imageUrl != null) {
                             // Photo Message
@@ -214,9 +234,28 @@ fun MessageBubble(
                             
                             if (message.text.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    verticalAlignment = Alignment.Bottom
+                                ) {
+                                    Text(
+                                        text = message.text,
+                                        color = textColor,
+                                        modifier = Modifier.weight(1f, fill = false)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = if (message.isSending) "Sending..." else formatTime(message.createdAt),
+                                        color = if (isMe) Color.White.copy(alpha = 0.7f) else Color(0xFF9CA3AF),
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            } else {
+                                // Timestamp for photo-only message
                                 Text(
-                                    text = message.text,
-                                    color = textColor
+                                    text = if (message.isSending) "Sending..." else formatTime(message.createdAt),
+                                    color = if (isMe) Color.White.copy(alpha = 0.7f) else Color(0xFF9CA3AF),
+                                    fontSize = 10.sp,
+                                    modifier = Modifier.align(Alignment.End)
                                 )
                             }
                         } else if (message.media?.audioUrl != null) {
@@ -247,96 +286,110 @@ fun MessageBubble(
                                 }
                             }
 
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.width(200.dp)
-                            ) {
-                                IconButton(
-                                    onClick = {
-                                        if (isPlaying) {
-                                            mediaPlayer.pause()
-                                            isPlaying = false
-                                        } else {
-                                            try {
-                                                if (mediaPlayer.duration == 0) { // Not prepared
-                                                    mediaPlayer.setDataSource(message.media.audioUrl)
-                                                    mediaPlayer.prepareAsync()
-                                                    mediaPlayer.setOnPreparedListener { 
-                                                        it.start() 
+                            Column {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.width(200.dp)
+                                ) {
+                                    IconButton(
+                                        onClick = {
+                                            if (isPlaying) {
+                                                mediaPlayer.pause()
+                                                isPlaying = false
+                                            } else {
+                                                try {
+                                                    if (mediaPlayer.duration == 0) { // Not prepared
+                                                        mediaPlayer.setDataSource(message.media.audioUrl)
+                                                        mediaPlayer.prepareAsync()
+                                                        mediaPlayer.setOnPreparedListener { 
+                                                            it.start() 
+                                                            isPlaying = true
+                                                        }
+                                                        mediaPlayer.setOnCompletionListener { 
+                                                            isPlaying = false 
+                                                            progress = 0f
+                                                        }
+                                                    } else {
+                                                        mediaPlayer.start()
                                                         isPlaying = true
                                                     }
-                                                    mediaPlayer.setOnCompletionListener { 
-                                                        isPlaying = false 
-                                                        progress = 0f
-                                                    }
-                                                } else {
-                                                    mediaPlayer.start()
-                                                    isPlaying = true
+                                                } catch (e: Exception) {
+                                                    e.printStackTrace()
                                                 }
-                                            } catch (e: Exception) {
-                                                e.printStackTrace()
                                             }
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(CircleShape)
-                                        .background(if (isMe) Color.White.copy(alpha = 0.2f) else Color(0xFFFCE7F3)) // Pink-100
-                                ) {
-                                    Icon(
-                                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                        contentDescription = if (isPlaying) "Pause" else "Play",
-                                        tint = if (isMe) Color.White else pinkColor,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                                
-                                Spacer(modifier = Modifier.width(8.dp))
-                                
-                                // Fake waveform with progress
-                                Row(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(24.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceEvenly
-                                ) {
-                                    val totalBars = 15
-                                    repeat(totalBars) { index ->
-                                        val isFilled = (index.toFloat() / totalBars.toFloat()) < progress
-                                        Box(
-                                            modifier = Modifier
-                                                .width(3.dp)
-                                                .height((10..24).random().dp)
-                                                .clip(CircleShape)
-                                                .background(
-                                                    if (isMe) {
-                                                        if (isFilled) Color.White else Color.White.copy(alpha = 0.4f)
-                                                    } else {
-                                                        if (isFilled) pinkColor else Color(0xFFF9A8D4) // Pink-300
-                                                    }
-                                                )
+                                        },
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .clip(CircleShape)
+                                            .background(if (isMe) Color.White.copy(alpha = 0.2f) else Color(0xFFFCE7F3)) // Pink-100
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                            contentDescription = if (isPlaying) "Pause" else "Play",
+                                            tint = if (isMe) Color.White else pinkColor,
+                                            modifier = Modifier.size(16.dp)
                                         )
                                     }
+                                    
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    
+                                    // Fake waveform with progress
+                                    Row(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(24.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        val totalBars = 15
+                                        repeat(totalBars) { index ->
+                                            val isFilled = (index.toFloat() / totalBars.toFloat()) < progress
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(3.dp)
+                                                    .height((10..24).random().dp)
+                                                    .clip(CircleShape)
+                                                    .background(
+                                                        if (isMe) {
+                                                            if (isFilled) Color.White else Color.White.copy(alpha = 0.4f)
+                                                        } else {
+                                                            if (isFilled) pinkColor else Color(0xFFF9A8D4) // Pink-300
+                                                        }
+                                                    )
+                                            )
+                                        }
+                                    }
                                 }
+                                // Timestamp for audio
+                                Text(
+                                    text = if (message.isSending) "Sending..." else formatTime(message.createdAt),
+                                    color = if (isMe) Color.White.copy(alpha = 0.7f) else Color(0xFF9CA3AF),
+                                    fontSize = 10.sp,
+                                    modifier = Modifier.align(Alignment.End)
+                                )
                             }
                         } else {
-                            Text(
-                                text = message.text,
-                                color = textColor
-                            )
+                            // Plain text message - inline timestamp layout
+                            val timestampText = if (message.isSending) "Sending..." else formatTime(message.createdAt)
+                            
+                            Row(
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                Text(
+                                    text = message.text,
+                                    color = textColor,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = timestampText,
+                                    color = if (isMe) Color.White.copy(alpha = 0.7f) else Color(0xFF9CA3AF),
+                                    fontSize = 10.sp
+                                )
+                            }
                         }
                     }
-                    
-                    // Timestamp inside bubble
-                    Text(
-                        text = if (message.isSending) "Sending..." else formatTime(message.createdAt),
-                        color = if (isMe) Color.White.copy(alpha = 0.7f) else Color(0xFF9CA3AF),
-                        fontSize = 10.sp,
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(top = 4.dp)
-                    )
+                }
                 }
 
                 DropdownMenu(
