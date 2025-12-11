@@ -31,6 +31,7 @@ class ChatRepository @Inject constructor(
     // Socket Observations
     fun observeNewMessages(): Flow<Message> = socketManager.observeNewMessages()
     fun observeTyping(): Flow<Pair<String, String>> = socketManager.observeTyping()
+    fun observeTypingStop(): Flow<Pair<String, String>> = socketManager.observeTypingStop()
     fun observeMessageUpdates(): Flow<Message> = socketManager.observeMessageUpdates()
     fun observeMessageDeletions(): Flow<SocketManager.MessageDeletionEvent> = socketManager.observeMessageDeletions()
 

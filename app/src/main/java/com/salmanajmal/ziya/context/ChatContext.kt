@@ -1,5 +1,6 @@
 package com.salmanajmal.ziya.context
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -19,6 +20,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+private const val TAG = "ChatContext"
+
 data class ChatState(
     val conversations: List<Conversation> = emptyList(),
     val currentConversation: Conversation? = null,
@@ -36,38 +39,50 @@ class ChatContextManager(
     val chatState: StateFlow<ChatState> = _chatState.asStateFlow()
 
     init {
+        Log.d(TAG, "🚀 ChatContextManager initialized, setting up observers")
+        
         // Observe socket events
         scope.launch {
+            Log.d(TAG, "👂 Starting to observe new messages")
             chatRepository.observeNewMessages().collect { message ->
+                Log.d(TAG, "📥 New message received from repository - ID: ${message.id}, ConvID: ${message.conversationId}")
                 handleNewMessage(message)
             }
         }
         
         scope.launch {
+            Log.d(TAG, "👂 Starting to observe typing events")
             chatRepository.observeTyping().collect { (conversationId, userId) ->
+                Log.d(TAG, "⌨️ Typing event received - ConvID: $conversationId, UserID: $userId")
                 handleTyping(conversationId, userId)
             }
         }
         
         scope.launch {
+            Log.d(TAG, "👂 Starting to observe message updates")
             chatRepository.observeMessageUpdates().collect { message ->
+                Log.d(TAG, "✏️ Message update received - ID: ${message.id}")
                 handleMessageUpdate(message)
             }
         }
 
         scope.launch {
+            Log.d(TAG, "👂 Starting to observe message deletions")
             chatRepository.observeMessageDeletions().collect { event ->
+                Log.d(TAG, "🗑️ Message deletion received - ID: ${event.messageId}")
                 handleMessageDeletion(event)
             }
         }
     }
 
     fun connect(userId: String) {
+        Log.d(TAG, "🔌 connect() called for userId: $userId")
         chatRepository.connectSocket(userId)
         fetchConversations()
     }
 
     fun disconnect() {
+        Log.d(TAG, "🔌 disconnect() called")
         chatRepository.disconnectSocket()
     }
 
@@ -90,15 +105,18 @@ class ChatContextManager(
     }
 
     fun selectConversation(conversationId: String) {
+        Log.d(TAG, "💬 selectConversation() - ConversationID: $conversationId")
         val conversation = _chatState.value.conversations.find { it.id == conversationId }
         
         if (conversation != null) {
+            Log.d(TAG, "✅ Conversation found locally, joining room")
             // Conversation found locally, use it directly
             _chatState.value = _chatState.value.copy(currentConversation = conversation, messages = emptyList())
             chatRepository.joinConversation(conversationId)
             fetchMessages(conversationId)
             markAsRead(conversationId)
         } else {
+            Log.d(TAG, "⚠️ Conversation not found locally, fetching from server")
             // Conversation not in local list - fetch conversations first
             // This happens when navigating from notification with a fresh app start
             _chatState.value = _chatState.value.copy(currentConversation = null, messages = emptyList())
@@ -109,11 +127,13 @@ class ChatContextManager(
             scope.launch {
                 val result = chatRepository.getConversations()
                 result.onSuccess { conversations ->
+                    Log.d(TAG, "✅ Fetched ${conversations.size} conversations")
                     _chatState.value = _chatState.value.copy(conversations = conversations)
                     
                     // Now find and set the current conversation
                     val foundConversation = conversations.find { it.id == conversationId }
                     if (foundConversation != null) {
+                        Log.d(TAG, "✅ Found and set current conversation")
                         _chatState.value = _chatState.value.copy(currentConversation = foundConversation)
                         markAsRead(conversationId)
                     }
@@ -292,17 +312,27 @@ class ChatContextManager(
     }
 
     private fun handleNewMessage(message: Message) {
+        Log.d(TAG, "📨 handleNewMessage() - ID: ${message.id}, ConvID: ${message.conversationId}")
+        Log.d(TAG, "📍 Current conversation ID: ${_chatState.value.currentConversation?.id}")
+        
         val currentMessages = _chatState.value.messages.toMutableList()
         
         // If message belongs to current conversation, add it
         if (message.conversationId == _chatState.value.currentConversation?.id) {
+            Log.d(TAG, "✅ Message belongs to current conversation")
             // Check for duplicates
             if (currentMessages.none { it.id == message.id }) {
+                Log.d(TAG, "✅ Message is not a duplicate, adding to list")
                 // Prepend new messages (Newest -> Oldest)
                 currentMessages.add(0, message)
                 _chatState.value = _chatState.value.copy(messages = currentMessages)
+                Log.d(TAG, "📊 Message list now has ${currentMessages.size} messages")
                 markAsRead(message.conversationId)
+            } else {
+                Log.d(TAG, "⚠️ Message is a duplicate, skipping")
             }
+        } else {
+            Log.d(TAG, "⚠️ Message does NOT belong to current conversation (current: ${_chatState.value.currentConversation?.id}, message: ${message.conversationId})")
         }
 
         // Update conversation list (last message)
@@ -321,6 +351,7 @@ class ChatContextManager(
         }.sortedByDescending { it.lastMessageAt } // Re-sort
 
         _chatState.value = _chatState.value.copy(conversations = updatedConversations)
+        Log.d(TAG, "✅ handleNewMessage() completed")
     }
     
     private fun handleMessageUpdate(message: Message) {

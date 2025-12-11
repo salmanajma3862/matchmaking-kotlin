@@ -1,5 +1,6 @@
 package com.salmanajmal.ziya.ui.screens.messages
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -35,6 +36,8 @@ import java.util.*
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
+
+private const val TAG = "ChatScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,14 +86,21 @@ fun ChatScreen(
     }
 
     LaunchedEffect(conversationId) {
+        Log.d(TAG, "💬 LaunchedEffect triggered for conversationId: $conversationId")
+        Log.d(TAG, "📍 Current conversation in state: ${chatState.currentConversation?.id}")
         if (chatState.currentConversation?.id != conversationId) {
+            Log.d(TAG, "🔄 Selecting conversation: $conversationId")
             chatContext.selectConversation(conversationId)
+        } else {
+            Log.d(TAG, "✅ Already in correct conversation")
         }
     }
     
     // Scroll to bottom on new message
     LaunchedEffect(chatState.messages.size) {
+        Log.d(TAG, "📊 Message count changed: ${chatState.messages.size}")
         if (chatState.messages.isNotEmpty()) {
+            Log.d(TAG, "📜 Scrolling to latest message")
             listState.animateScrollToItem(0)
         }
     }

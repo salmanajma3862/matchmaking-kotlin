@@ -62,11 +62,20 @@ class MainActivity : ComponentActivity() {
                 ) {
                     ChatProvider(chatRepository = chatRepository) {
                         val authContext = LocalAuthContext.current
+                        val chatContext = com.salmanajmal.ziya.context.LocalChatContext.current
                         val authState by authContext.authState.collectAsState()
                         val navController = rememberNavController()
                         
                         // Track the pending conversation for navigation
                         var conversationToNavigate by remember { mutableStateOf(pendingConversationId) }
+
+                        // Connect socket when user is authenticated
+                        LaunchedEffect(authState.isAuthenticated, authState.user?.id) {
+                            if (authState.isAuthenticated && authState.user?.id != null) {
+                                Log.d("MainActivity", "🔌 User authenticated, connecting socket for user: ${authState.user?.id}")
+                                chatContext.connect(authState.user!!.id)
+                            }
+                        }
 
                         if (authState.isLoading) {
                             Box(
