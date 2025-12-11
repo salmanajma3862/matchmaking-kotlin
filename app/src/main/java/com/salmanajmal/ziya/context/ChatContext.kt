@@ -51,10 +51,18 @@ class ChatContextManager(
         }
         
         scope.launch {
-            Log.d(TAG, "👂 Starting to observe typing events")
+            Log.d(TAG, "👂 Starting to observe typing start events")
             chatRepository.observeTyping().collect { (conversationId, userId) ->
-                Log.d(TAG, "⌨️ Typing event received - ConvID: $conversationId, UserID: $userId")
-                handleTyping(conversationId, userId)
+                Log.d(TAG, "⌨️ Typing START event received - ConvID: $conversationId, UserID: $userId")
+                handleTypingStart(conversationId, userId)
+            }
+        }
+
+        scope.launch {
+            Log.d(TAG, "👂 Starting to observe typing stop events")
+            chatRepository.observeTypingStop().collect { (conversationId, userId) ->
+                Log.d(TAG, "⌨️ Typing STOP event received - ConvID: $conversationId, UserID: $userId")
+                handleTypingStop(conversationId)
             }
         }
         
@@ -382,20 +390,20 @@ class ChatContextManager(
         }
     }
 
-    private fun handleTyping(conversationId: String, userId: String) {
-        // Simple implementation: just show who is typing in current conversation
-        // In a real app, you'd want to handle multiple typers and timeouts
+    private fun handleTypingStart(conversationId: String, userId: String) {
+        Log.d(TAG, "⌨️ handleTypingStart() - ConvID: $conversationId, UserID: $userId")
         val currentTyping = _chatState.value.typingUsers.toMutableMap()
         currentTyping[conversationId] = userId
         _chatState.value = _chatState.value.copy(typingUsers = currentTyping)
-        
-        // Auto-clear typing status after a few seconds (since we don't have explicit stop event handling in this simple version)
-        scope.launch {
-            kotlinx.coroutines.delay(3000)
-            val updatedTyping = _chatState.value.typingUsers.toMutableMap()
-            updatedTyping.remove(conversationId)
-            _chatState.value = _chatState.value.copy(typingUsers = updatedTyping)
-        }
+        Log.d(TAG, "✅ Typing users updated: ${_chatState.value.typingUsers}")
+    }
+
+    private fun handleTypingStop(conversationId: String) {
+        Log.d(TAG, "⌨️ handleTypingStop() - ConvID: $conversationId")
+        val currentTyping = _chatState.value.typingUsers.toMutableMap()
+        currentTyping.remove(conversationId)
+        _chatState.value = _chatState.value.copy(typingUsers = currentTyping)
+        Log.d(TAG, "✅ Typing users updated: ${_chatState.value.typingUsers}")
     }
 }
 

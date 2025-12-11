@@ -31,6 +31,7 @@ import com.salmanajmal.ziya.context.LocalAuthContext
 import com.salmanajmal.ziya.context.LocalChatContext
 import com.salmanajmal.ziya.ui.components.chat.ChatInput
 import com.salmanajmal.ziya.ui.components.chat.MessageBubble
+import com.salmanajmal.ziya.ui.components.chat.TypingIndicator
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -262,6 +263,15 @@ fun ChatScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // Typing indicator at bottom (first in reverse layout)
+                    if (chatState.typingUsers.containsKey(conversationId)) {
+                        item(key = "typing_indicator") {
+                            TypingIndicator(
+                                avatarUrl = otherUserAvatar
+                            )
+                        }
+                    }
+                    
                     items(chatState.messages) { message ->
                         MessageBubble(
                             message = message,
