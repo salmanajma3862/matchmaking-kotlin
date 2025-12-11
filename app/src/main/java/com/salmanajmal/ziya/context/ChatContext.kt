@@ -91,15 +91,34 @@ class ChatContextManager(
 
     fun selectConversation(conversationId: String) {
         val conversation = _chatState.value.conversations.find { it.id == conversationId }
-        _chatState.value = _chatState.value.copy(currentConversation = conversation, messages = emptyList())
-        
-        // Always fetch messages and join room, even if conversation not in local list
-        // This supports family members who access conversations from FamilyDashboard
-        chatRepository.joinConversation(conversationId)
-        fetchMessages(conversationId)
         
         if (conversation != null) {
+            // Conversation found locally, use it directly
+            _chatState.value = _chatState.value.copy(currentConversation = conversation, messages = emptyList())
+            chatRepository.joinConversation(conversationId)
+            fetchMessages(conversationId)
             markAsRead(conversationId)
+        } else {
+            // Conversation not in local list - fetch conversations first
+            // This happens when navigating from notification with a fresh app start
+            _chatState.value = _chatState.value.copy(currentConversation = null, messages = emptyList())
+            chatRepository.joinConversation(conversationId)
+            fetchMessages(conversationId)
+            
+            // Fetch conversations to get the full participant info
+            scope.launch {
+                val result = chatRepository.getConversations()
+                result.onSuccess { conversations ->
+                    _chatState.value = _chatState.value.copy(conversations = conversations)
+                    
+                    // Now find and set the current conversation
+                    val foundConversation = conversations.find { it.id == conversationId }
+                    if (foundConversation != null) {
+                        _chatState.value = _chatState.value.copy(currentConversation = foundConversation)
+                        markAsRead(conversationId)
+                    }
+                }
+            }
         }
     }
 
