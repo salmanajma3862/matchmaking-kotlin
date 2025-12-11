@@ -72,15 +72,17 @@ class NotificationHelper @Inject constructor(
         body: String,
         conversationId: String? = null
     ) {
+        val notificationId = getNextNotificationId()
+        
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             conversationId?.let { putExtra("conversationId", it) }
             putExtra("notificationType", "new_message")
         }
         
         val pendingIntent = PendingIntent.getActivity(
             context,
-            0,
+            notificationId, // Use unique request code to ensure new PendingIntent is created
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -94,7 +96,7 @@ class NotificationHelper @Inject constructor(
             .setContentIntent(pendingIntent)
             .build()
         
-        showNotification(notification)
+        showNotification(notificationId, notification)
     }
     
     /**
@@ -105,15 +107,17 @@ class NotificationHelper @Inject constructor(
         body: String,
         matchId: String? = null
     ) {
+        val notificationId = getNextNotificationId()
+        
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             matchId?.let { putExtra("matchId", it) }
             putExtra("notificationType", "new_match")
         }
         
         val pendingIntent = PendingIntent.getActivity(
             context,
-            0,
+            notificationId, // Use unique request code to ensure new PendingIntent is created
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -127,10 +131,10 @@ class NotificationHelper @Inject constructor(
             .setContentIntent(pendingIntent)
             .build()
         
-        showNotification(notification)
+        showNotification(notificationId, notification)
     }
     
-    private fun showNotification(notification: android.app.Notification) {
+    private fun showNotification(notificationId: Int, notification: android.app.Notification) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(
                     context,
@@ -141,6 +145,6 @@ class NotificationHelper @Inject constructor(
             }
         }
         
-        NotificationManagerCompat.from(context).notify(getNextNotificationId(), notification)
+        NotificationManagerCompat.from(context).notify(notificationId, notification)
     }
 }

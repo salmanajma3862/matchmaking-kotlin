@@ -41,28 +41,26 @@ class NotificationService : FirebaseMessagingService() {
     
     /**
      * Called when a message is received from FCM
+     * Note: This is called for ALL messages when using data-only payloads,
+     * including when the app is in background or killed.
      */
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, "Message received from: ${remoteMessage.from}")
         
-        // Check if message contains a notification payload
-        remoteMessage.notification?.let { notification ->
-            Log.d(TAG, "Notification - Title: ${notification.title}, Body: ${notification.body}")
-            handleNotification(notification.title, notification.body, remoteMessage.data)
-        }
-        
-        // Check if message contains a data payload
+        // Handle data payload - this works even when app is in background/killed
         if (remoteMessage.data.isNotEmpty()) {
             Log.d(TAG, "Data payload: ${remoteMessage.data}")
             handleDataMessage(remoteMessage.data)
         }
     }
     
-    private fun handleNotification(title: String?, body: String?, data: Map<String, String>) {
-        val notificationType = data["type"] ?: "general"
+    private fun handleDataMessage(data: Map<String, String>) {
+        val type = data["type"] ?: "general"
+        val title = data["title"]
+        val body = data["body"]
         
-        when (notificationType) {
+        when (type) {
             "new_message" -> {
                 notificationHelper.showMessageNotification(
                     title = title ?: "New Message",
@@ -82,29 +80,6 @@ class NotificationService : FirebaseMessagingService() {
                 notificationHelper.showMessageNotification(
                     title = title ?: "Ziya",
                     body = body ?: "You have a new notification"
-                )
-            }
-        }
-    }
-    
-    private fun handleDataMessage(data: Map<String, String>) {
-        val type = data["type"] ?: return
-        val title = data["title"]
-        val body = data["body"]
-        
-        when (type) {
-            "new_message" -> {
-                notificationHelper.showMessageNotification(
-                    title = title ?: "New Message",
-                    body = body ?: "You have a new message",
-                    conversationId = data["conversationId"]
-                )
-            }
-            "new_match" -> {
-                notificationHelper.showMatchNotification(
-                    title = title ?: "New Match!",
-                    body = body ?: "You have a new match",
-                    matchId = data["matchId"]
                 )
             }
         }
