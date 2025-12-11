@@ -261,7 +261,7 @@ fun ChatScreen(
                     reverseLayout = true, // Messages start from bottom
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     // Typing indicator at bottom (first in reverse layout)
                     if (chatState.typingUsers.containsKey(conversationId)) {
@@ -272,11 +272,23 @@ fun ChatScreen(
                         }
                     }
                     
-                    items(chatState.messages) { message ->
+                    val messages = chatState.messages
+                    items(messages.size) { index ->
+                        val message = messages[index]
+                        val isMe = message.sender.id == currentUserId
+                        
+                        // In reversed layout, index 0 is the newest message (bottom visually)
+                        // Avatar should show on the LAST message of a consecutive sequence from same sender
+                        // That means: check if the PREVIOUS message (index - 1, which appears BELOW visually) 
+                        // is from a DIFFERENT sender or doesn't exist
+                        val previousMessage = messages.getOrNull(index - 1)
+                        val isLastInGroup = previousMessage == null || previousMessage.sender.id != message.sender.id
+                        
                         MessageBubble(
                             message = message,
-                            isMe = message.sender.id == currentUserId,
-                            avatarUrl = if (message.sender.id == currentUserId) null else otherUserAvatar,
+                            isMe = isMe,
+                            avatarUrl = if (isMe) null else otherUserAvatar,
+                            showAvatar = !isMe && isLastInGroup,
                             onImageClick = { url -> selectedImage = url },
                             onLongClick = { msg -> messageToDelete = msg },
                             onReply = { msg -> replyingTo = msg }

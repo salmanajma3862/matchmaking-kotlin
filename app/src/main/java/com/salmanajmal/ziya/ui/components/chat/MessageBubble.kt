@@ -37,6 +37,7 @@ fun MessageBubble(
     message: Message,
     isMe: Boolean,
     avatarUrl: String? = null,
+    showAvatar: Boolean = true,
     onImageClick: (String) -> Unit = {},
     onLongClick: (Message) -> Unit = {},
     onReply: (Message) -> Unit = {}
@@ -83,16 +84,15 @@ fun MessageBubble(
         RoundedCornerShape(topStart = 4.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
     }
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 0.dp, vertical = 4.dp),
-        horizontalAlignment = if (isMe) Alignment.End else Alignment.Start
+            .padding(horizontal = 0.dp, vertical = 1.dp),
+        horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start,
+        verticalAlignment = Alignment.Bottom
     ) {
-        Row(
-            verticalAlignment = Alignment.Bottom
-        ) {
-            if (!isMe) {
+        if (!isMe) {
+            if (showAvatar) {
                 AsyncImage(
                     model = avatarUrl ?: "https://via.placeholder.com/150",
                     contentDescription = "Avatar",
@@ -103,7 +103,11 @@ fun MessageBubble(
                     contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.width(8.dp))
+            } else {
+                // Invisible spacer to maintain alignment when avatar is hidden
+                Spacer(modifier = Modifier.width(36.dp))
             }
+        }
 
             Box(
                 modifier = Modifier
@@ -323,6 +327,16 @@ fun MessageBubble(
                             )
                         }
                     }
+                    
+                    // Timestamp inside bubble
+                    Text(
+                        text = if (message.isSending) "Sending..." else formatTime(message.createdAt),
+                        color = if (isMe) Color.White.copy(alpha = 0.7f) else Color(0xFF9CA3AF),
+                        fontSize = 10.sp,
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(top = 4.dp)
+                    )
                 }
 
                 DropdownMenu(
@@ -354,17 +368,6 @@ fun MessageBubble(
                     )
                 }
             }
-        }
-        
-        Text(
-            text = if (message.isSending) "Sending..." else formatTime(message.createdAt),
-            color = Color(0xFF9CA3AF), // Gray-400
-            fontSize = 10.sp,
-            modifier = Modifier.padding(
-                top = 4.dp,
-                start = if (!isMe) 36.dp else 0.dp
-            )
-        )
     }
 }
 
