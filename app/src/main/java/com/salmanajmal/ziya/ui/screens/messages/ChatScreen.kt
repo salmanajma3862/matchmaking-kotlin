@@ -109,6 +109,7 @@ fun ChatScreen(
     var replyingTo by remember { mutableStateOf<com.salmanajmal.ziya.data.models.Message?>(null) }
 
     Scaffold(
+        modifier = Modifier.imePadding(),
         containerColor = Color(0xFFF9FAFB), // Gray-50
         topBar = {
             // Custom Header
@@ -206,7 +207,6 @@ fun ChatScreen(
                     .fillMaxWidth()
                     .background(Color.White)
                     .navigationBarsPadding()
-                    .imePadding() 
             ) {
                 ChatInput(
                     onSendMessage = { text ->
