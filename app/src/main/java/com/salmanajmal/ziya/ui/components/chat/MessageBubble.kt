@@ -127,7 +127,7 @@ fun MessageBubble(
                             onLongPress = { showMenu = true }
                         )
                     }
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
             Box {
                     Column(
@@ -293,37 +293,38 @@ fun MessageBubble(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.width(200.dp)
                                 ) {
-                                    IconButton(
-                                        onClick = {
-                                            if (isPlaying) {
-                                                mediaPlayer.pause()
-                                                isPlaying = false
-                                            } else {
-                                                try {
-                                                    if (mediaPlayer.duration == 0) { // Not prepared
-                                                        mediaPlayer.setDataSource(message.media.audioUrl)
-                                                        mediaPlayer.prepareAsync()
-                                                        mediaPlayer.setOnPreparedListener { 
-                                                            it.start() 
-                                                            isPlaying = true
-                                                        }
-                                                        mediaPlayer.setOnCompletionListener { 
-                                                            isPlaying = false 
-                                                            progress = 0f
-                                                        }
-                                                    } else {
-                                                        mediaPlayer.start()
-                                                        isPlaying = true
-                                                    }
-                                                } catch (e: Exception) {
-                                                    e.printStackTrace()
-                                                }
-                                            }
-                                        },
+                                    Box(
                                         modifier = Modifier
                                             .size(32.dp)
                                             .clip(CircleShape)
-                                            .background(if (isMe) Color.White.copy(alpha = 0.2f) else Color(0xFFFCE7F3)) // Pink-100
+                                            .background(if (isMe) Color.White.copy(alpha = 0.2f) else Color(0xFFFCE7F3))
+                                            .clickable {
+                                                if (isPlaying) {
+                                                    mediaPlayer.pause()
+                                                    isPlaying = false
+                                                } else {
+                                                    try {
+                                                        if (mediaPlayer.duration == 0) { // Not prepared
+                                                            mediaPlayer.setDataSource(message.media.audioUrl)
+                                                            mediaPlayer.prepareAsync()
+                                                            mediaPlayer.setOnPreparedListener { 
+                                                                it.start() 
+                                                                isPlaying = true
+                                                            }
+                                                            mediaPlayer.setOnCompletionListener { 
+                                                                isPlaying = false 
+                                                                progress = 0f
+                                                            }
+                                                        } else {
+                                                            mediaPlayer.start()
+                                                            isPlaying = true
+                                                        }
+                                                    } catch (e: Exception) {
+                                                        e.printStackTrace()
+                                                    }
+                                                }
+                                            },
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,

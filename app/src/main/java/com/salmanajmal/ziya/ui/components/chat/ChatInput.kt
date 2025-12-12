@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
 @Composable
@@ -37,8 +38,16 @@ fun ChatInput(
 ) {
     var text by remember { mutableStateOf("") }
     var isRecording by remember { mutableStateOf(false) }
+    var showEmojiPicker by remember { mutableStateOf(false) }
     
     val pinkColor = Color(0xFFEC4899) // Pink-500
+    
+    // Common emojis for quick access
+    val commonEmojis = listOf(
+        "😀", "😂", "🥰", "😍", "😘", "🥺", "😭", "😊",
+        "❤️", "🔥", "✨", "👍", "🙏", "💕", "😎", "🎉",
+        "👋", "🤗", "😅", "🥳", "💪", "🙌", "💯", "😇"
+    )
     val roseColor = Color(0xFFF43F5E) // Rose-500
     val gradientBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
         colors = listOf(pinkColor, roseColor)
@@ -111,6 +120,38 @@ fun ChatInput(
                         tint = Color.Gray,
                         modifier = Modifier.size(20.dp)
                     )
+                }
+            }
+        }
+
+        // Emoji Picker - show when emoji button is clicked
+        if (showEmojiPicker && !isRecording) {
+            androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(8),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .background(Color(0xFFF9FAFB))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(commonEmojis.size) { index ->
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                text = text + commonEmojis[index]
+                                onTyping(true)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = commonEmojis[index],
+                            fontSize = 22.sp
+                        )
+                    }
                 }
             }
         }
@@ -206,8 +247,8 @@ fun ChatInput(
                         Icon(Icons.Default.Image, "Add Image", tint = Color(0xFF6B7280))
                     }
                     
-                    IconButton(onClick = { }, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Default.Face, "Emoji", tint = Color(0xFF6B7280))
+                    IconButton(onClick = { showEmojiPicker = !showEmojiPicker }, modifier = Modifier.size(40.dp)) {
+                        Icon(Icons.Default.Face, "Emoji", tint = if (showEmojiPicker) pinkColor else Color(0xFF6B7280))
                     }
 
                     Box(
