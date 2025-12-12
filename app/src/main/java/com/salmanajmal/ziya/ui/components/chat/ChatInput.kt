@@ -23,8 +23,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.geometry.Offset
+import kotlin.math.abs
 
 @Composable
 fun ChatInput(
@@ -249,8 +253,8 @@ fun ChatInput(
                         )
                     }
                 } else {
-                     // Mic Button with Gesture
-                     Box(
+                     // Mic Button with Gesture - supports both tap and drag-to-lock
+                      Box(
                         modifier = Modifier
                             .size(40.dp)
                             .background(
@@ -258,35 +262,50 @@ fun ChatInput(
                                 CircleShape
                             )
                             .pointerInput(Unit) {
-                                detectDragGestures(
-                                    onDragStart = { offset ->
-                                        isRecording = true
-                                        onStartRecording()
-                                        offsetY = 0f
-                                    },
-                                    onDrag = { change, dragAmount ->
+                                awaitEachGesture {
+                                    val down = awaitFirstDown()
+                                    down.consume()
+                                    
+                                    // Start recording on press
+                                    isRecording = true
+                                    onStartRecording()
+                                    offsetY = 0f
+                                    
+                                    var totalDragY = 0f
+                                    var hasDragged = false
+                                    
+                                    // Track movement until release
+                                    while (true) {
+                                        val event = awaitPointerEvent()
+                                        val change = event.changes.firstOrNull() ?: break
+                                        
+                                        if (!change.pressed) {
+                                            // Finger released
+                                            change.consume()
+                                            if (!isLocked) {
+                                                isRecording = false
+                                                offsetY = 0f
+                                                onStopRecording()
+                                            }
+                                            break
+                                        }
+                                        
+                                        // Track drag amount
+                                        val dragAmount = change.position.y - change.previousPosition.y
+                                        if (abs(dragAmount) > 1f) {
+                                            hasDragged = true
+                                            totalDragY += dragAmount
+                                            offsetY = totalDragY
+                                            
+                                            // Check for lock
+                                            if (totalDragY < lockThreshold) {
+                                                isLocked = true
+                                                break // Exit the loop, recording continues in locked mode
+                                            }
+                                        }
                                         change.consume()
-                                        offsetY += dragAmount.y
-                                        if (offsetY < lockThreshold) {
-                                            isLocked = true
-                                        }
-                                    },
-                                    onDragEnd = {
-                                        if (!isLocked) {
-                                            isRecording = false
-                                            offsetY = 0f
-                                            onStopRecording()
-                                        }
-                                        // If locked, do nothing (keep recording)
-                                    },
-                                    onDragCancel = {
-                                        if (!isLocked) {
-                                            isRecording = false
-                                            offsetY = 0f
-                                            onCancelRecording()
-                                        }
                                     }
-                                )
+                                }
                             },
                         contentAlignment = Alignment.Center
                     ) {
