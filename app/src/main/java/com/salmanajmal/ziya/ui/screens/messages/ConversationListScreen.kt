@@ -80,7 +80,8 @@ fun ConversationListScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
-            // New Matches Section
+            // New Matches Section - Commented out
+            /*
             item {
                 Column(
                     modifier = Modifier
@@ -136,6 +137,7 @@ fun ConversationListScreen(
                 }
                 Divider(color = Color(0xFFE5E7EB), thickness = 1.dp) // Gray-200
             }
+            */
 
             // Messages Header
             item {

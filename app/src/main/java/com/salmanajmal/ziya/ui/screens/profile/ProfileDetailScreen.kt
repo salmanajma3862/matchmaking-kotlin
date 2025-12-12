@@ -241,7 +241,7 @@ fun ProfileDetailContent(
                 Column(
                     modifier = Modifier
                         .padding(24.dp)
-                        .padding(bottom = 80.dp) // Space for bottom bar
+                        .padding(bottom = 130.dp) // Extra space for bottom action bar
                 ) {
                     // Basic Info
                     Row(
