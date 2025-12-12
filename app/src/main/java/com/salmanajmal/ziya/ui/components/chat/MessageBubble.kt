@@ -46,7 +46,8 @@ fun MessageBubble(
     showAvatar: Boolean = true,
     onImageClick: (String) -> Unit = {},
     onLongClick: (Message) -> Unit = {},
-    onReply: (Message) -> Unit = {}
+    onReply: (Message) -> Unit = {},
+    onAvatarClick: () -> Unit = {}
 ) {
     val pinkColor = Color(0xFFEC4899) // Pink-500
     val roseColor = Color(0xFFF43F5E) // Rose-500
@@ -105,7 +106,8 @@ fun MessageBubble(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(CircleShape)
-                        .background(Color.Gray),
+                        .background(Color.Gray)
+                        .clickable { onAvatarClick() },
                     contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.width(8.dp))

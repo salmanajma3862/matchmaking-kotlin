@@ -428,6 +428,7 @@ fun ProfileDetailContent(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .background(Color.White)
+                    .navigationBarsPadding()
                     .padding(16.dp)
             ) {
                 BottomActionBar(

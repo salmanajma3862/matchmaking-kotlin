@@ -27,6 +27,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.salmanajmal.ziya.ui.navigation.Screen
 import com.salmanajmal.ziya.context.LocalAuthContext
 import com.salmanajmal.ziya.context.LocalChatContext
 import com.salmanajmal.ziya.ui.components.chat.ChatInput
@@ -138,14 +139,19 @@ fun ChatScreen(
                     
                     Spacer(modifier = Modifier.width(4.dp))
                     
-                    // Avatar
+                    // Avatar - Clickable to navigate to profile
                     AsyncImage(
                         model = otherUserAvatar ?: "https://via.placeholder.com/150",
                         contentDescription = "Avatar",
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color.Gray),
+                            .background(Color.Gray)
+                            .clickable {
+                                otherUser?.id?.let { userId ->
+                                    navController.navigate(Screen.ProfileDetail.createRoute(userId, "match"))
+                                }
+                            },
                         contentScale = ContentScale.Crop
                     )
                     
@@ -298,7 +304,12 @@ fun ChatScreen(
                             showAvatar = !isMe && isLastInGroup,
                             onImageClick = { url -> selectedImage = url },
                             onLongClick = { msg -> messageToDelete = msg },
-                            onReply = { msg -> replyingTo = msg }
+                            onReply = { msg -> replyingTo = msg },
+                            onAvatarClick = {
+                                otherUser?.id?.let { userId ->
+                                    navController.navigate(Screen.ProfileDetail.createRoute(userId, "match"))
+                                }
+                            }
                         )
                     }
                 }
