@@ -249,7 +249,9 @@ fun ChatScreen(
                     onStopRecording = {
                         val file = audioRecorder.stopRecording()
                         if (file != null) {
-                            chatContext.sendAudioMessage(conversationId, file)
+                            authState.user?.let { user ->
+                                chatContext.sendAudioMessage(conversationId, file, user)
+                            }
                         }
                     },
                     onCancelRecording = {

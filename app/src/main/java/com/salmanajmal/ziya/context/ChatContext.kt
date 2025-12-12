@@ -237,8 +237,23 @@ class ChatContextManager(
         }
     }
 
-    fun sendAudioMessage(conversationId: String, audioFile: java.io.File) {
+    fun sendAudioMessage(conversationId: String, audioFile: java.io.File, currentUser: com.salmanajmal.ziya.data.models.User) {
         scope.launch {
+            // Optimistic Update - show message immediately with sending indicator
+            val tempId = "temp_audio_${System.currentTimeMillis()}"
+            val tempMessage = Message(
+                id = tempId,
+                conversationId = conversationId,
+                sender = currentUser,
+                text = "",
+                messageType = "audio",
+                media = com.salmanajmal.ziya.data.models.Media(audioUrl = "file://${audioFile.absolutePath}"),
+                createdAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).apply { timeZone = java.util.TimeZone.getTimeZone("UTC") }.format(java.util.Date()),
+                updatedAt = "",
+                isSending = true
+            )
+            handleNewMessage(tempMessage)
+
             try {
                 val type = "audio/mpeg" // Or determine from file extension
                 val requestFile = okhttp3.RequestBody.create(type.toMediaTypeOrNull(), audioFile)
@@ -250,11 +265,24 @@ class ChatContextManager(
 
                 val result = chatRepository.sendMediaMessage(body, conversationIdBody, textBody, messageTypeBody)
                 result.onSuccess { message ->
-                    handleNewMessage(message)
+                    // Remove temp message and add real message
+                    val currentMessages = _chatState.value.messages.filter { it.id != tempId }.toMutableList()
+                    // Check for duplicates (real message might have arrived via socket already)
+                    if (currentMessages.none { it.id == message.id }) {
+                        currentMessages.add(0, message)
+                    }
+                    _chatState.value = _chatState.value.copy(messages = currentMessages)
+                    markAsRead(message.conversationId)
+                }.onFailure {
+                    // Handle failure: remove temp message
+                    val currentMessages = _chatState.value.messages.filter { it.id != tempId }
+                    _chatState.value = _chatState.value.copy(messages = currentMessages)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Handle error
+                // Handle error: remove temp message
+                val currentMessages = _chatState.value.messages.filter { it.id != tempId }
+                _chatState.value = _chatState.value.copy(messages = currentMessages)
             }
         }
     }

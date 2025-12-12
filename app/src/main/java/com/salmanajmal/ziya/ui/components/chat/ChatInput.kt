@@ -1,34 +1,28 @@
 package com.salmanajmal.ziya.ui.components.chat
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Face
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.ui.draw.alpha
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.geometry.Offset
-import kotlin.math.abs
+import kotlinx.coroutines.delay
 
 @Composable
 fun ChatInput(
@@ -49,49 +43,41 @@ fun ChatInput(
     val gradientBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
         colors = listOf(pinkColor, roseColor)
     )
-
-    var isLocked by remember { mutableStateOf(false) }
-    var offsetY by remember { mutableStateOf(0f) }
-    val lockThreshold = -150f // Distance to drag up to lock
+    
+    // Recording timer
+    var recordingSeconds by remember { mutableIntStateOf(0) }
+    
+    // Timer effect - runs independently
+    LaunchedEffect(isRecording) {
+        if (isRecording) {
+            recordingSeconds = 0
+            while (isRecording) {
+                delay(1000)
+                if (isRecording) recordingSeconds++
+            }
+        } else {
+            recordingSeconds = 0
+        }
+    }
+    
+    // Format time as MM:SS
+    val formattedTime = remember(recordingSeconds) {
+        val minutes = recordingSeconds / 60
+        val seconds = recordingSeconds % 60
+        String.format("%02d:%02d", minutes, seconds)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
-            .padding(8.dp)
     ) {
-        // Lock Indicator (Visible when recording and dragging or locked)
-        if (isRecording && !isLocked) {
-             Box(
-                 modifier = Modifier
-                     .fillMaxWidth()
-                     .height(100.dp) // Height for drag area
-                     .offset(y = offsetY.dp / 2) // Parallax effect or just visual feedback
-                     .alpha(if (offsetY < -20f) 1f else 0f), // Fade in when dragging starts
-                 contentAlignment = Alignment.BottomCenter
-             ) {
-                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                     Icon(
-                         imageVector = Icons.Default.Lock,
-                         contentDescription = "Lock Recording",
-                         tint = if (offsetY < lockThreshold) pinkColor else Color.Gray
-                     )
-                     Text(
-                         text = "Slide up to lock",
-                         style = MaterialTheme.typography.bodySmall,
-                         color = Color.Gray
-                     )
-                     Spacer(modifier = Modifier.height(8.dp))
-                 }
-             }
-        }
-
-        // Reply Preview
-        if (replyToMessage != null) {
+        // Reply Preview - only show when not recording
+        if (replyToMessage != null && !isRecording) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
                     .background(Color(0xFFF3F4F6), RoundedCornerShape(12.dp))
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -108,7 +94,7 @@ fun ChatInput(
                         text = "Replying to ${replyToMessage.sender.name}",
                         style = MaterialTheme.typography.bodySmall,
                         color = pinkColor,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = if (replyToMessage.text.isNotEmpty()) replyToMessage.text else "Media",
@@ -129,195 +115,208 @@ fun ChatInput(
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+        // Main input row
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
         ) {
-            if (isLocked) {
-                // Locked State UI
-                IconButton(onClick = {
-                    isRecording = false
-                    isLocked = false
-                    offsetY = 0f
-                    onCancelRecording()
-                }) {
-                    Text("Cancel", color = Color.Red)
-                }
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                Text(
-                    text = "Recording...",
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                IconButton(
-                    onClick = {
-                        isRecording = false
-                        isLocked = false
-                        offsetY = 0f
-                        onStopRecording()
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(gradientBrush, CircleShape)
+            if (isRecording) {
+                // RECORDING STATE - Simple layout with delete, timer, and send
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Send Audio",
-                        tint = Color.White
-                    )
-                }
-            } else {
-                // Normal Input UI
-                // Image Button
-                IconButton(
-                    onClick = onImageSelected,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Image,
-                        contentDescription = "Add Image",
-                        tint = Color(0xFF6B7280) // Gray-500
-                    )
-                }
-                
-                // Smile Button (Placeholder)
-                IconButton(
-                    onClick = { /* TODO */ },
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Face, // Using Face as Smile
-                        contentDescription = "Emoji",
-                        tint = Color(0xFF6B7280) // Gray-500
-                    )
-                }
-
-                // Input Field
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 8.dp)
-                        .height(48.dp)
-                        .background(Color(0xFFF3F4F6), RoundedCornerShape(24.dp)) // Gray-100
-                        .padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    if (text.isEmpty() && !isRecording) {
-                        Text(
-                            text = "Type a message...",
-                            color = Color(0xFF9CA3AF), // Gray-400
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                    // Delete button to cancel recording
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFFFEE2E2),
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clickable {
+                                isRecording = false
+                                onCancelRecording()
+                            }
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Cancel Recording",
+                                tint = Color(0xFFEF4444),
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                     }
                     
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = if (isRecording) "Recording..." else text,
-                        onValueChange = { 
-                            if (!isRecording) {
-                                text = it
-                                onTyping(it.isNotEmpty())
-                            }
-                        },
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(
-                            color = if (isRecording) Color(0xFFEF4444) else Color.Black // Red-500 if recording
-                        ),
-                        maxLines = 4,
-                        enabled = !isRecording,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                // Send/Mic Button
-                if (text.isNotBlank()) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    
+                    // Recording indicator with timer and waveform
+                    Surface(
+                        shape = RoundedCornerShape(24.dp),
+                        color = Color(0xFFFCE7F3),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            PulsingRecordingDot()
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = formattedTime,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFFBE185D)
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            AudioWaveform(pinkColor = pinkColor)
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.width(12.dp))
+                    
+                    // Send button (replaces mic when recording)
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(44.dp)
                             .background(gradientBrush, CircleShape)
                             .clickable {
-                                onSendMessage(text)
-                                text = ""
-                                onTyping(false)
+                                isRecording = false
+                                onStopRecording()
                             },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = "Send",
+                            contentDescription = "Send Audio",
                             tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                } else {
-                     // Mic Button with Gesture - supports both tap and drag-to-lock
-                      Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                if (isRecording) androidx.compose.ui.graphics.SolidColor(Color(0xFFEF4444)) else gradientBrush, 
-                                CircleShape
-                            )
-                            .pointerInput(Unit) {
-                                awaitEachGesture {
-                                    val down = awaitFirstDown()
-                                    down.consume()
-                                    
-                                    // Start recording on press
-                                    isRecording = true
-                                    onStartRecording()
-                                    offsetY = 0f
-                                    
-                                    var totalDragY = 0f
-                                    var hasDragged = false
-                                    
-                                    // Track movement until release
-                                    while (true) {
-                                        val event = awaitPointerEvent()
-                                        val change = event.changes.firstOrNull() ?: break
-                                        
-                                        if (!change.pressed) {
-                                            // Finger released
-                                            change.consume()
-                                            if (!isLocked) {
-                                                isRecording = false
-                                                offsetY = 0f
-                                                onStopRecording()
-                                            }
-                                            break
-                                        }
-                                        
-                                        // Track drag amount
-                                        val dragAmount = change.position.y - change.previousPosition.y
-                                        if (abs(dragAmount) > 1f) {
-                                            hasDragged = true
-                                            totalDragY += dragAmount
-                                            offsetY = totalDragY
-                                            
-                                            // Check for lock
-                                            if (totalDragY < lockThreshold) {
-                                                isLocked = true
-                                                break // Exit the loop, recording continues in locked mode
-                                            }
-                                        }
-                                        change.consume()
-                                    }
-                                }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Mic,
-                            contentDescription = "Record Audio",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }
+            } else {
+                // NORMAL INPUT STATE
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onImageSelected, modifier = Modifier.size(40.dp)) {
+                        Icon(Icons.Default.Image, "Add Image", tint = Color(0xFF6B7280))
+                    }
+                    
+                    IconButton(onClick = { }, modifier = Modifier.size(40.dp)) {
+                        Icon(Icons.Default.Face, "Emoji", tint = Color(0xFF6B7280))
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 8.dp)
+                            .height(48.dp)
+                            .background(Color(0xFFF3F4F6), RoundedCornerShape(24.dp))
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        if (text.isEmpty()) {
+                            Text("Type a message...", color = Color(0xFF9CA3AF), style = MaterialTheme.typography.bodyMedium)
+                        }
+                        androidx.compose.foundation.text.BasicTextField(
+                            value = text,
+                            onValueChange = { text = it; onTyping(it.isNotEmpty()) },
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.Black),
+                            maxLines = 4,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    if (text.isNotBlank()) {
+                        // Send text button
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(gradientBrush, CircleShape)
+                                .clickable {
+                                    onSendMessage(text)
+                                    text = ""
+                                    onTyping(false)
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = Color.White, modifier = Modifier.size(20.dp))
+                        }
+                    } else {
+                        // Mic button - tap to start recording
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(gradientBrush, CircleShape)
+                                .clickable {
+                                    isRecording = true
+                                    onStartRecording()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.Mic, "Record Audio", tint = Color.White, modifier = Modifier.size(20.dp))
+                        }
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun PulsingRecordingDot() {
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 0.85f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
+    
+    Box(
+        modifier = Modifier
+            .size(10.dp)
+            .scale(scale)
+            .background(Color(0xFFEF4444), CircleShape)
+    )
+}
+
+@Composable
+private fun AudioWaveform(pinkColor: Color) {
+    val infiniteTransition = rememberInfiniteTransition(label = "waveform")
+    
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        repeat(5) { index ->
+            val height by infiniteTransition.animateFloat(
+                initialValue = 6f,
+                targetValue = 16f + (index % 3) * 4f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(
+                        durationMillis = 250 + index * 80,
+                        easing = FastOutSlowInEasing
+                    ),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "bar$index"
+            )
+            
+            Box(
+                modifier = Modifier
+                    .width(3.dp)
+                    .height(height.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(pinkColor.copy(alpha = 0.6f + (index % 2) * 0.4f))
+            )
         }
     }
 }
