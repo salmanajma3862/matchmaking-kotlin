@@ -163,7 +163,15 @@ fun AppNavigation(
             )
         }
         composable(Screen.Notifications.route) { com.salmanajmal.ziya.ui.screens.profile.NotificationsScreen() }
-        composable(Screen.Privacy.route) { com.salmanajmal.ziya.ui.screens.profile.PrivacyScreen() }
+        composable(Screen.Privacy.route) {
+            val authViewModel: com.salmanajmal.ziya.viewmodel.AuthViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val currentUserState = authViewModel.currentUserState.collectAsState()
+            val user = (currentUserState.value as? com.salmanajmal.ziya.utils.NetworkResult.Success)?.data
+            com.salmanajmal.ziya.ui.screens.profile.PrivacyScreen(
+                user = user,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
         composable(Screen.Subscription.route) { com.salmanajmal.ziya.ui.screens.profile.SubscriptionScreen() }
         composable(Screen.Help.route) { com.salmanajmal.ziya.ui.screens.profile.HelpScreen() }
         composable(Screen.About.route) { com.salmanajmal.ziya.ui.screens.profile.AboutScreen() }

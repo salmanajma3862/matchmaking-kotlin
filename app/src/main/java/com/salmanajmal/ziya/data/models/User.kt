@@ -65,6 +65,9 @@ data class User(
     val isOnline: Boolean = false,
     val lastSeen: String? = null,
     
+    // Privacy Settings
+    val privacySettings: PrivacySettings? = null,
+    
     // Subscription
     val subscription: Subscription? = null,
     
@@ -96,6 +99,16 @@ data class Photo(
     val isPrimary: Boolean = false,
     @SerializedName("_id")
     val id: String? = null
+)
+
+/**
+ * Privacy Settings Model
+ */
+data class PrivacySettings(
+    val hideOnlineStatus: Boolean = false,
+    val hideLastSeen: Boolean = false,
+    val hideProfilePhoto: Boolean = false,
+    val blockStrangersFromMessaging: Boolean = false
 )
 
 /**

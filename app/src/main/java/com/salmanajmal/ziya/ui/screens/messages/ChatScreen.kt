@@ -59,8 +59,15 @@ fun ChatScreen(
     val otherUser = conversation?.participants?.find { it.id != currentUserId }
     val otherUserName = otherUser?.name ?: "Chat"
     val otherUserAvatar = otherUser?.photos?.firstOrNull()?.url
-    val isOnline = otherUser?.isOnline == true
-    val lastActive = otherUser?.lastSeen
+    
+    // Respect the OTHER user's privacy settings
+    val otherUserHidesOnlineStatus = otherUser?.privacySettings?.hideOnlineStatus == true
+    val otherUserHidesLastSeen = otherUser?.privacySettings?.hideLastSeen == true
+    
+    // Only show online status if the other user allows it
+    val isOnline = if (otherUserHidesOnlineStatus) false else otherUser?.isOnline == true
+    // Only show last active if the other user allows it
+    val lastActive = if (otherUserHidesLastSeen) null else otherUser?.lastSeen
     
     val listState = rememberLazyListState()
     val context = LocalContext.current

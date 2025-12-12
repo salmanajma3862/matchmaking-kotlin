@@ -138,7 +138,19 @@ data class UpdateProfileRequest(
     val numberOfSiblings: Int? = null,
     val livingWithFamily: Boolean? = null,
     val intention: String? = null,
-    val readyForMarriageTimeframe: String? = null
+    val readyForMarriageTimeframe: String? = null,
+    val privacySettings: PrivacySettingsUpdateRequest? = null
+)
+
+/**
+ * Privacy Settings Update Request
+ * Matches backend privacySettings schema
+ */
+data class PrivacySettingsUpdateRequest(
+    val hideOnlineStatus: Boolean? = null,
+    val hideLastSeen: Boolean? = null,
+    val hideProfilePhoto: Boolean? = null,
+    val blockStrangersFromMessaging: Boolean? = null
 )
 
 // ==================== Match & Swipe Requests ====================

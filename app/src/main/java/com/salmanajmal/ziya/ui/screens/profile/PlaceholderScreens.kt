@@ -836,10 +836,393 @@ fun NotificationsScreen() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrivacyScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Privacy Screen Placeholder")
+fun PrivacyScreen(
+    user: User? = null,
+    onNavigateBack: () -> Unit = {},
+    viewModel: EditProfileViewModel = hiltViewModel()
+) {
+    val state by viewModel.state.collectAsState()
+    val scrollState = rememberScrollState()
+    
+    // Initialize viewModel with user data
+    LaunchedEffect(user) {
+        user?.let { viewModel.initializeWithUser(it) }
+    }
+    
+    // Local state for privacy toggles
+    var showOnlineStatus by remember { mutableStateOf(true) }
+    var showLastActive by remember { mutableStateOf(true) }
+    var isSaving by remember { mutableStateOf(false) }
+    var showSaveSuccess by remember { mutableStateOf(false) }
+    
+    // Initialize from user privacy settings when available
+    LaunchedEffect(state.user) {
+        state.user?.privacySettings?.let { settings ->
+            showOnlineStatus = !settings.hideOnlineStatus
+            showLastActive = !settings.hideLastSeen
+        }
+    }
+    
+    // Handle save success
+    LaunchedEffect(state.saveSuccess) {
+        if (state.saveSuccess) {
+            isSaving = false
+            showSaveSuccess = true
+            viewModel.clearSaveSuccess()
+            kotlinx.coroutines.delay(2000)
+            showSaveSuccess = false
+        }
+    }
+    
+    // Handle save error
+    LaunchedEffect(state.errorMessage) {
+        if (state.errorMessage != null) {
+            isSaving = false
+        }
+    }
+    
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF9FAFB))) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header with gradient
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF2563EB), Color(0xFF3B82F6)) // Blue gradient for privacy
+                        )
+                    )
+                    .padding(top = 48.dp, bottom = 24.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.White.copy(alpha = 0.2f), CircleShape)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                    
+                    Text(
+                        "Privacy & Safety",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    
+                    // Spacer for symmetry
+                    Spacer(modifier = Modifier.size(40.dp))
+                }
+            }
+            
+            // Content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Success message
+                if (showSaveSuccess) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFDCFCE7)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF16A34A),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "Settings saved successfully!",
+                                color = Color(0xFF16A34A),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+                
+                // Error message
+                state.errorMessage?.let { error ->
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEE2E2)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Error,
+                                contentDescription = null,
+                                tint = Color(0xFFDC2626),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                error,
+                                color = Color(0xFFDC2626),
+                                modifier = Modifier.weight(1f),
+                                fontWeight = FontWeight.Medium
+                            )
+                            IconButton(onClick = { viewModel.clearError() }) {
+                                Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = Color(0xFFDC2626))
+                            }
+                        }
+                    }
+                }
+                
+                // Online Status Section
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(4.dp, RoundedCornerShape(16.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(Color(0xFFDCFCE7), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Circle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF16A34A),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "Online Status",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                        }
+                        
+                        Text(
+                            "Control who can see when you're online",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        
+                        PrivacyToggleItem(
+                            icon = Icons.Default.Visibility,
+                            title = "Show Online Status",
+                            description = "Others can see when you're currently online",
+                            checked = showOnlineStatus,
+                            onCheckedChange = { showOnlineStatus = it }
+                        )
+                    }
+                }
+                
+                // Last Active Section
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(4.dp, RoundedCornerShape(16.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(Color(0xFFDBEAFE), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Schedule,
+                                    contentDescription = null,
+                                    tint = Color(0xFF2563EB),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "Last Active",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                        }
+                        
+                        Text(
+                            "Control who can see when you were last active",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        
+                        PrivacyToggleItem(
+                            icon = Icons.Default.AccessTime,
+                            title = "Show Last Active",
+                            description = "Others can see 'last active X ago' in chats",
+                            checked = showLastActive,
+                            onCheckedChange = { showLastActive = it }
+                        )
+                    }
+                }
+                
+                // Info Card
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = Color(0xFFF59E0B),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                "Privacy Note",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF92400E),
+                                fontSize = 14.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "When you hide your status, you can still see others' status if they have it enabled. These settings only control what others see about you.",
+                                color = Color(0xFF92400E),
+                                fontSize = 13.sp,
+                                lineHeight = 18.sp
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Save Button
+                Button(
+                    onClick = {
+                        isSaving = true
+                        viewModel.updatePrivacySettings(
+                            hideOnlineStatus = !showOnlineStatus,
+                            hideLastSeen = !showLastActive
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    enabled = !isSaving,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    if (isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp,
+                            color = Color.White
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.Save,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Save Settings",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrivacyToggleItem(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFF9FAFB), RoundedCornerShape(12.dp))
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = if (checked) Color(0xFF2563EB) else TextSecondary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                title,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary,
+                fontSize = 15.sp
+            )
+            Text(
+                description,
+                color = TextSecondary,
+                fontSize = 13.sp
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Color(0xFF2563EB),
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color(0xFFD1D5DB)
+            )
+        )
     }
 }
 

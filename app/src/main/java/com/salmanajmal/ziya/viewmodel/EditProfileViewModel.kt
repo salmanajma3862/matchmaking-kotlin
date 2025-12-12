@@ -3,6 +3,7 @@ package com.salmanajmal.ziya.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.salmanajmal.ziya.data.models.User
+import com.salmanajmal.ziya.data.models.request.PrivacySettingsUpdateRequest
 import com.salmanajmal.ziya.data.models.request.UpdateProfileRequest
 import com.salmanajmal.ziya.data.repository.UserRepository
 import com.salmanajmal.ziya.utils.NetworkResult
@@ -65,7 +66,8 @@ data class EditProfileState(
     val saveSuccess: Boolean = false,
     val showNameChangeConfirmation: Boolean = false,
     val originalName: String = "",
-    val pendingName: String = "" // Name waiting for confirmation
+    val pendingName: String = "", // Name waiting for confirmation
+    val user: User? = null // Current user for reading settings like privacy
 )
 
 /**
@@ -110,7 +112,8 @@ class EditProfileViewModel @Inject constructor(
                 intention = user.intention,
                 readyForMarriageTimeframe = user.readyForMarriageTimeframe,
                 originalName = user.name,
-                isLoading = false
+                isLoading = false,
+                user = user
             )
         }
     }
@@ -333,5 +336,41 @@ class EditProfileViewModel @Inject constructor(
     
     fun clearSaveSuccess() {
         _state.update { it.copy(saveSuccess = false) }
+    }
+    
+    /**
+     * Update privacy settings only
+     */
+    fun updatePrivacySettings(hideOnlineStatus: Boolean, hideLastSeen: Boolean) {
+        viewModelScope.launch {
+            val request = UpdateProfileRequest(
+                privacySettings = PrivacySettingsUpdateRequest(
+                    hideOnlineStatus = hideOnlineStatus,
+                    hideLastSeen = hideLastSeen
+                )
+            )
+            
+            userRepository.updateProfile(request).collect { result ->
+                when (result) {
+                    is NetworkResult.Loading -> {
+                        _state.update { it.copy(isSaving = true, errorMessage = null) }
+                    }
+                    is NetworkResult.Success -> {
+                        _state.update { it.copy(
+                            isSaving = false,
+                            saveSuccess = true,
+                            errorMessage = null,
+                            user = result.data // Update user with new privacy settings
+                        ) }
+                    }
+                    is NetworkResult.Error -> {
+                        _state.update { it.copy(
+                            isSaving = false,
+                            errorMessage = result.message
+                        ) }
+                    }
+                }
+            }
+        }
     }
 }
