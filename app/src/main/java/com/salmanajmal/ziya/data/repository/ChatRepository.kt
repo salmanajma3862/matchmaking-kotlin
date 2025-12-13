@@ -1,5 +1,6 @@
 package com.salmanajmal.ziya.data.repository
 
+import android.util.Log
 import com.salmanajmal.ziya.data.api.MessageApiService
 import com.salmanajmal.ziya.data.models.Conversation
 import com.salmanajmal.ziya.data.models.Message
@@ -13,6 +14,8 @@ import okhttp3.RequestBody
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "ChatRepository"
 
 @Singleton
 class ChatRepository @Inject constructor(
@@ -38,13 +41,25 @@ class ChatRepository @Inject constructor(
     // API Calls
     suspend fun getConversations(): Result<List<Conversation>> {
         return try {
+            Log.d(TAG, "📥 getConversations() - Making API call")
             val response = apiService.getConversations()
+            Log.d(TAG, "📥 getConversations() - Response code: ${response.code()}, isSuccessful: ${response.isSuccessful}")
+            
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val conversations = response.body()!!
+                Log.d(TAG, "✅ getConversations() - Parsed ${conversations.size} conversations")
+                conversations.forEachIndexed { index, conv ->
+                    Log.d(TAG, "  📦 Conv[$index]: id=${conv.id}, participants=${conv.participants.size}, " +
+                            "participantIds=${conv.participants.map { it.id }}")
+                }
+                Result.success(conversations)
             } else {
+                val errorBody = response.errorBody()?.string() ?: "No error body"
+                Log.e(TAG, "❌ getConversations() - Failed: code=${response.code()}, error=$errorBody")
                 Result.failure(Exception("Error fetching conversations: ${response.code()}"))
             }
         } catch (e: Exception) {
+            Log.e(TAG, "❌ getConversations() - Exception: ${e.message}", e)
             Result.failure(e)
         }
     }

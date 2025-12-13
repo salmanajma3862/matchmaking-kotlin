@@ -63,7 +63,7 @@ data class User(
     
     // Presence
     val isOnline: Boolean = false,
-    val lastSeen: String? = null,
+    @SerializedName("lastActive") val lastSeen: String? = null,
     
     // Privacy Settings
     val privacySettings: PrivacySettings? = null,

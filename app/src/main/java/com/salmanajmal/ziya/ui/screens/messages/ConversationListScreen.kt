@@ -1,5 +1,6 @@
 package com.salmanajmal.ziya.ui.screens.messages
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +27,8 @@ import com.salmanajmal.ziya.ui.components.chat.ConversationItem
 import com.salmanajmal.ziya.utils.NetworkResult
 import com.salmanajmal.ziya.viewmodel.MatchViewModel
 
+private const val TAG = "ConversationListScreen"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationListScreen(
@@ -42,7 +45,11 @@ fun ConversationListScreen(
     
     val currentUserId = authState.user?.id ?: return
 
+    // Debug: Log chatState changes
+    Log.d(TAG, "🔄 Recomposition - isLoading=${chatState.isLoading}, conversations.size=${chatState.conversations.size}, error=${chatState.error}")
+
     LaunchedEffect(Unit) {
+        Log.d(TAG, "📥 LaunchedEffect - fetching conversations")
         chatContext.fetchConversations()
         // Ensure matches are fetched
         if (matchesState !is NetworkResult.Success) {

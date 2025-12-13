@@ -95,15 +95,23 @@ class ChatContextManager(
     }
 
     fun fetchConversations() {
+        Log.d(TAG, "📥 fetchConversations() - Starting fetch")
         scope.launch {
             _chatState.value = _chatState.value.copy(isLoading = true)
             val result = chatRepository.getConversations()
+            Log.d(TAG, "📥 fetchConversations() - Result received, isSuccess=${result.isSuccess}")
             result.onSuccess { conversations ->
+                Log.d(TAG, "✅ fetchConversations() - Success! Got ${conversations.size} conversations")
+                conversations.forEach { conv ->
+                    Log.d(TAG, "  📦 Conversation: id=${conv.id}, participants=${conv.participants.size}")
+                }
                 _chatState.value = _chatState.value.copy(
                     conversations = conversations,
                     isLoading = false
                 )
+                Log.d(TAG, "✅ fetchConversations() - State updated, chatState.conversations.size=${_chatState.value.conversations.size}")
             }.onFailure { e ->
+                Log.e(TAG, "❌ fetchConversations() - Failed: ${e.message}")
                 _chatState.value = _chatState.value.copy(
                     error = e.message,
                     isLoading = false
