@@ -328,7 +328,7 @@ fun ProfileScreen(
             MenuSection(title = "ACCOUNT") {
                 MenuItem(
                     icon = Icons.Default.Person,
-                    label = "View My Public Profile",
+                    label = "My Public Profile",
                     subtitle = "See how others view your profile",
                     onClick = onViewProfile,
                     iconTint = Color(0xFFDB2777), // Pink-600

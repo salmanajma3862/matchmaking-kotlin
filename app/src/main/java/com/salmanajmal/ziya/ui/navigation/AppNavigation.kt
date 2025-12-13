@@ -176,7 +176,11 @@ fun AppNavigation(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-        composable(Screen.Subscription.route) { com.salmanajmal.ziya.ui.screens.profile.SubscriptionScreen() }
+        composable(Screen.Subscription.route) { 
+            com.salmanajmal.ziya.ui.screens.premium.PremiumPackagesScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
         composable(Screen.Help.route) { com.salmanajmal.ziya.ui.screens.profile.HelpScreen() }
         composable(Screen.About.route) { com.salmanajmal.ziya.ui.screens.profile.AboutScreen() }
         composable(Screen.InviteFamily.route) {
