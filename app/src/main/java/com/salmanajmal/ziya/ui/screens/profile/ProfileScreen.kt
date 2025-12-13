@@ -380,14 +380,6 @@ fun ProfileScreen(
                     iconBgColor = Color(0xFFEFF6FF) // Blue-50
                 )
                 MenuItem(
-                    icon = Icons.Default.Security,
-                    label = "Privacy & Safety",
-                    subtitle = "Control your visibility and safety",
-                    onClick = onPrivacy,
-                    iconTint = Color(0xFF2563EB), // Blue-600
-                    iconBgColor = Color(0xFFEFF6FF) // Blue-50
-                )
-                MenuItem(
                     icon = Icons.Default.GroupAdd,
                     label = "Invite Family",
                     subtitle = "Create & manage family invite codes",
