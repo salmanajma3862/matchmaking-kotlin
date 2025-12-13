@@ -81,6 +81,14 @@ class ChatContextManager(
                 handleMessageDeletion(event)
             }
         }
+
+        scope.launch {
+            Log.d(TAG, "👂 Starting to observe user status changes")
+            chatRepository.observeUserStatusChanges().collect { event ->
+                Log.d(TAG, "👤 User status change received - UserID: ${event.userId}, Online: ${event.isOnline}")
+                handleUserStatusChange(event.userId, event.isOnline, event.lastSeen)
+            }
+        }
     }
 
     fun connect(userId: String) {
@@ -440,6 +448,40 @@ class ChatContextManager(
         currentTyping.remove(conversationId)
         _chatState.value = _chatState.value.copy(typingUsers = currentTyping)
         Log.d(TAG, "✅ Typing users updated: ${_chatState.value.typingUsers}")
+    }
+
+    private fun handleUserStatusChange(userId: String, isOnline: Boolean, lastSeen: String?) {
+        Log.d(TAG, "👤 handleUserStatusChange() - UserID: $userId, Online: $isOnline, LastSeen: $lastSeen")
+        
+        // Update participant status in all conversations
+        val updatedConversations = _chatState.value.conversations.map { conv ->
+            val updatedParticipants = conv.participants.map { participant ->
+                if (participant.id == userId) {
+                    participant.copy(isOnline = isOnline, lastSeen = lastSeen)
+                } else {
+                    participant
+                }
+            }
+            conv.copy(participants = updatedParticipants)
+        }
+        
+        // Update current conversation if affected
+        val updatedCurrentConversation = _chatState.value.currentConversation?.let { conv ->
+            val updatedParticipants = conv.participants.map { participant ->
+                if (participant.id == userId) {
+                    participant.copy(isOnline = isOnline, lastSeen = lastSeen)
+                } else {
+                    participant
+                }
+            }
+            conv.copy(participants = updatedParticipants)
+        }
+        
+        _chatState.value = _chatState.value.copy(
+            conversations = updatedConversations,
+            currentConversation = updatedCurrentConversation
+        )
+        Log.d(TAG, "✅ User status updated in conversations")
     }
 }
 

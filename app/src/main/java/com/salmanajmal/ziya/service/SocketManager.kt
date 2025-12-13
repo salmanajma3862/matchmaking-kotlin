@@ -29,6 +29,7 @@ class SocketManager @Inject constructor() {
     private val _typingStop = MutableSharedFlow<Pair<String, String>>(extraBufferCapacity = 10)
     private val _messageUpdates = MutableSharedFlow<Message>(extraBufferCapacity = 10)
     private val _messageDeletions = MutableSharedFlow<MessageDeletionEvent>(extraBufferCapacity = 10)
+    private val _userStatusChanges = MutableSharedFlow<UserStatusEvent>(extraBufferCapacity = 10)
 
     fun connect(userId: String) {
         Log.d(TAG, "🔌 connect() called for userId: $userId")
@@ -145,6 +146,21 @@ class SocketManager @Inject constructor() {
         }
         Log.d(TAG, "✅ message_deleted listener registered")
 
+        // User status change listener - for real-time online/offline updates
+        socket?.on("user_status_change") { args ->
+            try {
+                val data = args[0] as JSONObject
+                val userId = data.getString("userId")
+                val isOnline = data.getBoolean("isOnline")
+                val lastSeen = data.optString("lastSeen", null)
+                Log.d(TAG, "👤 Received user_status_change - User: $userId, Online: $isOnline, LastSeen: $lastSeen")
+                _userStatusChanges.tryEmit(UserStatusEvent(userId, isOnline, lastSeen))
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error parsing user_status_change event", e)
+            }
+        }
+        Log.d(TAG, "✅ user_status_change listener registered")
+
         Log.d(TAG, "✅ All event listeners set up successfully")
     }
 
@@ -188,11 +204,19 @@ class SocketManager @Inject constructor() {
     fun observeMessageUpdates(): Flow<Message> = _messageUpdates.asSharedFlow()
     
     fun observeMessageDeletions(): Flow<MessageDeletionEvent> = _messageDeletions.asSharedFlow()
+    
+    fun observeUserStatusChanges(): Flow<UserStatusEvent> = _userStatusChanges.asSharedFlow()
 
     data class MessageDeletionEvent(
         val messageId: String,
         val isDeletedForEveryone: Boolean,
         val text: String? = null
+    )
+
+    data class UserStatusEvent(
+        val userId: String,
+        val isOnline: Boolean,
+        val lastSeen: String? = null
     )
 }
 

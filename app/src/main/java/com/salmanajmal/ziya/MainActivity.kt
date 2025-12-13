@@ -19,10 +19,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.navigation.compose.rememberNavController
 import com.salmanajmal.ziya.context.AuthContextProvider
 import com.salmanajmal.ziya.context.ChatProvider
 import com.salmanajmal.ziya.context.LocalAuthContext
+import com.salmanajmal.ziya.context.LocalChatContext
 import com.salmanajmal.ziya.data.preferences.UserPreferences
 import com.salmanajmal.ziya.data.repository.AuthRepository
 import com.salmanajmal.ziya.data.repository.ChatRepository
@@ -46,12 +50,35 @@ class MainActivity : ComponentActivity() {
 
     // Store pending navigation from notification
     private var pendingConversationId: String? = null
+    
+    // Store user ID for lifecycle reconnection
+    private var currentUserId: String? = null
+    
+    // App lifecycle observer for background/foreground handling
+    private val appLifecycleObserver = object : DefaultLifecycleObserver {
+        override fun onStart(owner: LifecycleOwner) {
+            // App came to foreground - reconnect socket
+            currentUserId?.let { userId ->
+                Log.d("MainActivity", "🟢 App came to foreground, reconnecting socket for user: $userId")
+                chatRepository.connectSocket(userId)
+            }
+        }
+        
+        override fun onStop(owner: LifecycleOwner) {
+            // App went to background - disconnect socket immediately
+            Log.d("MainActivity", "🔴 App went to background, disconnecting socket")
+            chatRepository.disconnectSocket()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         // Handle notification intent on initial launch
         handleIntent(intent)
+        
+        // Register app lifecycle observer for background/foreground detection
+        ProcessLifecycleOwner.get().lifecycle.addObserver(appLifecycleObserver)
         
         enableEdgeToEdge()
         setContent {
@@ -62,7 +89,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     ChatProvider(chatRepository = chatRepository) {
                         val authContext = LocalAuthContext.current
-                        val chatContext = com.salmanajmal.ziya.context.LocalChatContext.current
+                        val chatContext = LocalChatContext.current
                         val authState by authContext.authState.collectAsState()
                         val navController = rememberNavController()
                         
@@ -72,8 +99,13 @@ class MainActivity : ComponentActivity() {
                         // Connect socket when user is authenticated
                         LaunchedEffect(authState.isAuthenticated, authState.user?.id) {
                             if (authState.isAuthenticated && authState.user?.id != null) {
-                                Log.d("MainActivity", "🔌 User authenticated, connecting socket for user: ${authState.user?.id}")
-                                chatContext.connect(authState.user!!.id)
+                                val userId = authState.user!!.id
+                                Log.d("MainActivity", "🔌 User authenticated, connecting socket for user: $userId")
+                                // Store userId for lifecycle reconnection
+                                currentUserId = userId
+                                chatContext.connect(userId)
+                            } else {
+                                currentUserId = null
                             }
                         }
 
@@ -121,6 +153,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        // Remove lifecycle observer to prevent memory leaks
+        ProcessLifecycleOwner.get().lifecycle.removeObserver(appLifecycleObserver)
     }
     
     override fun onNewIntent(intent: Intent) {
