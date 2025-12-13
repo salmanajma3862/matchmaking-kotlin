@@ -88,7 +88,7 @@ class NotificationHelper @Inject constructor(
         )
         
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_MESSAGES)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -123,7 +123,7 @@ class NotificationHelper @Inject constructor(
         )
         
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_MATCHES)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
