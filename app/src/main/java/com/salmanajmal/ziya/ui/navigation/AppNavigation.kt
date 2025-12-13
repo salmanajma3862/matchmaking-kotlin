@@ -152,7 +152,11 @@ fun AppNavigation(
                 conversationId = conversationId
             )
         }
-        composable(Screen.Settings.route) { com.salmanajmal.ziya.ui.screens.profile.SettingsScreen() }
+        composable(Screen.Settings.route) { 
+            com.salmanajmal.ziya.ui.screens.settings.SettingsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
         composable(Screen.EditProfile.route) {
             val authViewModel: com.salmanajmal.ziya.viewmodel.AuthViewModel = androidx.hilt.navigation.compose.hiltViewModel()
             val currentUserState = authViewModel.currentUserState.collectAsState()
