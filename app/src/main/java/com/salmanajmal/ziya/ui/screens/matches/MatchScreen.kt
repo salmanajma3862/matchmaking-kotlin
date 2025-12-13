@@ -45,7 +45,7 @@ fun MatchScreen(
             ) {
                 // Header
                 Surface(
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface,
                     shadowElevation = 1.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {

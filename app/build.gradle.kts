@@ -69,6 +69,7 @@ dependencies {
 
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.billing.ktx)
 
     implementation("io.socket:socket.io-client:2.1.0")
 

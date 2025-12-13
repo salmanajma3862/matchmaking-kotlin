@@ -214,7 +214,7 @@ fun MatchProfileCard(
             .aspectRatio(0.75f) // 3:4 aspect ratio
             .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onViewProfile)
-            .background(Color.White) // Fallback background
+            .background(MaterialTheme.colorScheme.surface) // Fallback background
     ) {
         // Image
         AsyncImage(
@@ -242,7 +242,7 @@ fun MatchProfileCard(
         // New Badge
         if (isNew) {
             Surface(
-                color = androidx.compose.ui.graphics.Color(0xFFEC4899), // Pink-500
+                color = MaterialTheme.colorScheme.primary, // Pink-500
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .padding(12.dp)
@@ -256,13 +256,13 @@ fun MatchProfileCard(
                     Icon(
                         imageVector = androidx.compose.material.icons.Icons.Filled.Favorite,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(12.dp)
                     )
                     Text(
                         text = "New",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -292,8 +292,8 @@ fun MatchProfileCard(
         // Message FAB
         FloatingActionButton(
             onClick = onMessage,
-            containerColor = Color.White,
-            contentColor = androidx.compose.ui.graphics.Color(0xFFEC4899), // Pink-500
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary, // Pink-500
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)

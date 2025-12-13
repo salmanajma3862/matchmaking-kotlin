@@ -74,7 +74,7 @@ fun MainScreen(
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = androidx.compose.ui.graphics.Color.White
+                containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface
             ) {
                 items.forEachIndexed { index, item ->
                     NavigationBarItem(
@@ -83,11 +83,11 @@ fun MainScreen(
                         selected = selectedItem == index,
                         onClick = { selectedItem = index },
                         colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
-                            indicatorColor = com.salmanajmal.ziya.ui.theme.LightColors.PrimaryContainer,
-                            selectedIconColor = com.salmanajmal.ziya.ui.theme.LightColors.Primary,
-                            selectedTextColor = com.salmanajmal.ziya.ui.theme.LightColors.Primary,
-                            unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
-                            unselectedTextColor = androidx.compose.ui.graphics.Color.Gray
+                            indicatorColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
+                            selectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer,
+                            selectedTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                            unselectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }

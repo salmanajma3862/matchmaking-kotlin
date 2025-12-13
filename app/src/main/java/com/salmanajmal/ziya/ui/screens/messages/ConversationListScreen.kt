@@ -64,7 +64,7 @@ fun ConversationListScreen(
     ) {
         // Header matching MatchScreen
         Surface(
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 1.dp,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -145,16 +145,6 @@ fun ConversationListScreen(
                 Divider(color = Color(0xFFE5E7EB), thickness = 1.dp) // Gray-200
             }
             */
-
-            // Messages Header
-            item {
-                Text(
-                    text = "Messages",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF4B5563), // Gray-600
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                )
-            }
 
             // Conversations List
             if (chatState.isLoading && chatState.conversations.isEmpty()) {

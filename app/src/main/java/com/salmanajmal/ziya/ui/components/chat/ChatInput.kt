@@ -40,7 +40,7 @@ fun ChatInput(
     var isRecording by remember { mutableStateOf(false) }
     var showEmojiPicker by remember { mutableStateOf(false) }
     
-    val pinkColor = Color(0xFFEC4899) // Pink-500
+    val pinkColor = MaterialTheme.colorScheme.primary // Pink-500
     
     // Common emojis for quick access
     val commonEmojis = listOf(
@@ -48,7 +48,7 @@ fun ChatInput(
         "❤️", "🔥", "✨", "👍", "🙏", "💕", "😎", "🎉",
         "👋", "🤗", "😅", "🥳", "💪", "🙌", "💯", "😇"
     )
-    val roseColor = Color(0xFFF43F5E) // Rose-500
+    val roseColor = MaterialTheme.colorScheme.inversePrimary // Rose-500
     val gradientBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
         colors = listOf(pinkColor, roseColor)
     )
@@ -79,7 +79,7 @@ fun ChatInput(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surface)
     ) {
         // Reply Preview - only show when not recording
         if (replyToMessage != null && !isRecording) {
@@ -87,7 +87,7 @@ fun ChatInput(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .background(Color(0xFFF3F4F6), RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -108,7 +108,7 @@ fun ChatInput(
                     Text(
                         text = if (replyToMessage.text.isNotEmpty()) replyToMessage.text else "Media",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
@@ -117,7 +117,7 @@ fun ChatInput(
                     Icon(
                         imageVector = Icons.Filled.Close,
                         contentDescription = "Cancel Reply",
-                        tint = Color.Gray,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -131,7 +131,7 @@ fun ChatInput(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-                    .background(Color(0xFFF9FAFB))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .padding(horizontal = 8.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -209,7 +209,7 @@ fun ChatInput(
                                 text = formattedTime,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFBE185D)
+                                color = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             AudioWaveform(pinkColor = pinkColor)
@@ -232,7 +232,7 @@ fun ChatInput(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
                             contentDescription = "Send Audio",
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -244,11 +244,11 @@ fun ChatInput(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onImageSelected, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Default.Image, "Add Image", tint = Color(0xFF6B7280))
+                        Icon(Icons.Default.Image, "Add Image", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     
                     IconButton(onClick = { showEmojiPicker = !showEmojiPicker }, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Default.Face, "Emoji", tint = if (showEmojiPicker) pinkColor else Color(0xFF6B7280))
+                        Icon(Icons.Default.Face, "Emoji", tint = if (showEmojiPicker) pinkColor else MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
                     Box(
@@ -256,17 +256,17 @@ fun ChatInput(
                             .weight(1f)
                             .padding(horizontal = 8.dp)
                             .height(48.dp)
-                            .background(Color(0xFFF3F4F6), RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
                             .padding(horizontal = 16.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
                         if (text.isEmpty()) {
-                            Text("Type a message...", color = Color(0xFF9CA3AF), style = MaterialTheme.typography.bodyMedium)
+                            Text("Type a message...", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
                         }
                         androidx.compose.foundation.text.BasicTextField(
                             value = text,
                             onValueChange = { text = it; onTyping(it.isNotEmpty()) },
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.Black),
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                             maxLines = 4,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -285,7 +285,7 @@ fun ChatInput(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = Color.White, modifier = Modifier.size(20.dp))
+                            Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp))
                         }
                     } else {
                         // Mic button - tap to start recording
@@ -299,7 +299,7 @@ fun ChatInput(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Filled.Mic, "Record Audio", tint = Color.White, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Filled.Mic, "Record Audio", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp))
                         }
                     }
                 }
@@ -325,7 +325,7 @@ private fun PulsingRecordingDot() {
         modifier = Modifier
             .size(10.dp)
             .scale(scale)
-            .background(Color(0xFFEF4444), CircleShape)
+            .background(MaterialTheme.colorScheme.error, CircleShape)
     )
 }
 

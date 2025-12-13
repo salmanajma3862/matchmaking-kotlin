@@ -69,7 +69,9 @@ data class User(
     val privacySettings: PrivacySettings? = null,
     
     // Subscription
-    val subscription: Subscription? = null,
+    val isPremium: Boolean = false,
+    val subscriptionExpiry: String? = null,
+    val subscriptionPlan: String? = null,
     
     // Preferences
     val preferences: UserPreferences? = null,
@@ -109,17 +111,6 @@ data class PrivacySettings(
     val hideLastSeen: Boolean = false,
     val hideProfilePhoto: Boolean = false,
     val blockStrangersFromMessaging: Boolean = false
-)
-
-/**
- * Subscription Model
- */
-data class Subscription(
-    val tier: String = "free", // "free", "premium", "gold"
-    val isActive: Boolean = false,
-    val startDate: String? = null,
-    val endDate: String? = null,
-    val autoRenew: Boolean = false
 )
 
 /**

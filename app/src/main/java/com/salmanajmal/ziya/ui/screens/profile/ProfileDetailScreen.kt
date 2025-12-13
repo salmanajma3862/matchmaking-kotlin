@@ -131,7 +131,7 @@ fun ProfileDetailContent(
     val photos = user.photos ?: emptyList()
     val pagerState = rememberPagerState(pageCount = { if (photos.isNotEmpty()) photos.size else 1 })
 
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF9FAFB))) { // bg-gray-50
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         // Photo Gallery (Background)
         Box(
             modifier = Modifier
@@ -235,7 +235,7 @@ fun ProfileDetailContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 8.dp
             ) {
                 Column(
@@ -258,7 +258,7 @@ fun ProfileDetailContent(
                             Icon(
                                 imageVector = Icons.Filled.CheckCircle,
                                 contentDescription = "Verified",
-                                tint = Color(0xFF3B82F6), // Blue-500
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -272,14 +272,14 @@ fun ProfileDetailContent(
                             Icon(
                                 imageVector = Icons.Outlined.LocationOn,
                                 contentDescription = null,
-                                tint = Color.Gray,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "${user.city}, ${user.country}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -297,7 +297,7 @@ fun ProfileDetailContent(
                         }
                     }
 
-                    Divider(color = Color(0xFFF3F4F6)) // gray-100
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Bio
@@ -305,11 +305,11 @@ fun ProfileDetailContent(
                         Text(
                             text = user.bio,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = Color(0xFF374151), // gray-700
+                            color = MaterialTheme.colorScheme.onSurface,
                             lineHeight = 24.sp
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-                        Divider(color = Color(0xFFF3F4F6))
+                        Divider(color = MaterialTheme.colorScheme.outlineVariant)
                         Spacer(modifier = Modifier.height(24.dp))
                     }
 
@@ -338,7 +338,7 @@ fun ProfileDetailContent(
                     }
                     
                     Spacer(modifier = Modifier.height(24.dp))
-                    Divider(color = Color(0xFFF3F4F6))
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Lifestyle
@@ -361,7 +361,7 @@ fun ProfileDetailContent(
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    Divider(color = Color(0xFFF3F4F6))
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Looking For
@@ -376,7 +376,7 @@ fun ProfileDetailContent(
                             }
                         }
                         Spacer(modifier = Modifier.height(24.dp))
-                        Divider(color = Color(0xFFF3F4F6))
+                        Divider(color = MaterialTheme.colorScheme.outlineVariant)
                         Spacer(modifier = Modifier.height(24.dp))
                     }
 
@@ -391,10 +391,10 @@ fun ProfileDetailContent(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             user.interests?.forEach { interest ->
-                                InterestChip(text = interest, color = Color(0xFFEC4899), bgColor = Color(0xFFFDF2F8)) // Pink
+                                InterestChip(text = interest, color = MaterialTheme.colorScheme.primary, bgColor = MaterialTheme.colorScheme.primaryContainer)
                             }
                             user.hobbies?.forEach { hobby ->
-                                InterestChip(text = hobby, color = Color(0xFF9333EA), bgColor = Color(0xFFFAF5FF)) // Purple
+                                InterestChip(text = hobby, color = MaterialTheme.colorScheme.tertiary, bgColor = MaterialTheme.colorScheme.tertiaryContainer)
                             }
                         }
                         Spacer(modifier = Modifier.height(24.dp))
@@ -427,7 +427,7 @@ fun ProfileDetailContent(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.surface)
                     .navigationBarsPadding()
                     .padding(16.dp)
             ) {
@@ -455,14 +455,14 @@ fun QuickStat(icon: ImageVector, text: String) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color(0xFF4B5563), // gray-600
+            tint = MaterialTheme.colorScheme.onSurfaceVariant, // gray-600
             modifier = Modifier.size(16.dp)
         )
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = Color(0xFF4B5563)
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -472,7 +472,7 @@ fun SectionTitle(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.bodyMedium,
-        color = Color(0xFF6B7280), // gray-500
+        color = MaterialTheme.colorScheme.onSurfaceVariant, // gray-500
         modifier = Modifier.padding(bottom = 12.dp)
     )
 }
@@ -483,13 +483,13 @@ fun DetailItem(label: String, value: String) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = Color(0xFF6B7280), // gray-500
+            color = MaterialTheme.colorScheme.onSurfaceVariant, // gray-500
             modifier = Modifier.padding(bottom = 4.dp)
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF111827) // gray-900
+            color = MaterialTheme.colorScheme.onSurface // gray-900
         )
     }
 }
@@ -499,20 +499,20 @@ fun LifestyleChip(icon: ImageVector, text: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .background(Color(0xFFF9FAFB), CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color(0xFF4B5563),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(16.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.bodySmall,
-            color = Color(0xFF374151)
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -523,14 +523,14 @@ fun LookingForItem(icon: ImageVector, text: String) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color(0xFF4B5563),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(16.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF374151)
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -581,14 +581,14 @@ fun BottomActionBar(
             "received" -> {
                 Button(
                     onClick = onReject,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Reject")
                 }
                 Button(
                     onClick = onAccept,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)), // Green
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary), // Green
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Accept")
@@ -597,7 +597,7 @@ fun BottomActionBar(
             "match" -> {
                 Button(
                     onClick = onUnmatch,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     modifier = Modifier.weight(0.3f)
                 ) {
                     Text("Unmatch")
@@ -611,7 +611,7 @@ fun BottomActionBar(
                         .weight(0.7f)
                         .background(
                             Brush.horizontalGradient(
-                                colors = listOf(Color(0xFFEC4899), Color(0xFFF43F5E))
+                                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
                             ),
                             CircleShape
                         )

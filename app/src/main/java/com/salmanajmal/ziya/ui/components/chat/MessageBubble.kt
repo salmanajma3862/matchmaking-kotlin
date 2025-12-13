@@ -51,10 +51,10 @@ fun MessageBubble(
     currentlyPlayingMessageId: String? = null,
     onAudioPlay: (String?) -> Unit = {}
 ) {
-    val pinkColor = Color(0xFFEC4899) // Pink-500
-    val roseColor = Color(0xFFF43F5E) // Rose-500
-    val purpleColor = Color(0xFF8B5CF6) // Violet-500 for family
-    val indigoColor = Color(0xFF6366F1) // Indigo-500 for family
+    val pinkColor = MaterialTheme.colorScheme.primary // Pink-500
+    val roseColor = MaterialTheme.colorScheme.inversePrimary // Rose-500
+    val purpleColor = MaterialTheme.colorScheme.tertiary // Violet-500 for family
+    val indigoColor = MaterialTheme.colorScheme.secondary // Indigo-500 for family
     var showMenu by remember { mutableStateOf(false) }
     
     // Determine if this message is from a family member
@@ -73,18 +73,18 @@ fun MessageBubble(
         }
         isFamilyMessage -> {
             // Family member's messages received - light purple
-            androidx.compose.ui.graphics.SolidColor(Color(0xFFEDE9FE)) // Violet-100
+            androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.tertiaryContainer) // Violet-100
         }
         else -> {
             // Regular messages received - gray
-            androidx.compose.ui.graphics.SolidColor(Color(0xFFF3F4F6)) // Gray-100
+            androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.surfaceVariant) // Gray-100
         }
     }
     
     val textColor = when {
-        isMe -> Color.White
-        isFamilyMessage -> Color(0xFF4C1D95) // Violet-900 for family received
-        else -> Color(0xFF111827) // Gray-900
+        isMe -> MaterialTheme.colorScheme.onPrimary
+        isFamilyMessage -> MaterialTheme.colorScheme.onTertiaryContainer // Violet-900 for family received
+        else -> MaterialTheme.colorScheme.onSurfaceVariant // Gray-900
     }
     
     val shape = if (isMe) {
@@ -151,7 +151,7 @@ fun MessageBubble(
                         Row(
                             modifier = Modifier
                                 .padding(bottom = 8.dp)
-                                .background(Color.Black.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
                                 .padding(8.dp)
                                 .fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -417,18 +417,18 @@ fun MessageBubble(
                 DropdownMenu(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
-                    modifier = Modifier.background(Color.White, RoundedCornerShape(16.dp))
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Copy", color = Color.Black) },
+                        text = { Text("Copy", color = MaterialTheme.colorScheme.onSurface) },
                         onClick = { showMenu = false /* TODO: Implement Copy */ }
                     )
                     DropdownMenuItem(
-                        text = { Text("Edit", color = Color.Black) },
+                        text = { Text("Edit", color = MaterialTheme.colorScheme.onSurface) },
                         onClick = { showMenu = false /* TODO: Implement Edit */ }
                     )
                     DropdownMenuItem(
-                        text = { Text("Reply", color = Color.Black) },
+                        text = { Text("Reply", color = MaterialTheme.colorScheme.onSurface) },
                         onClick = { 
                             showMenu = false 
                             onReply(message)

@@ -137,6 +137,15 @@ object NetworkModule {
     fun provideSwipeApiService(retrofit: Retrofit): SwipeApiService {
         return retrofit.create(SwipeApiService::class.java)
     }
+
+    /**
+     * Provide SubscriptionApiService
+     */
+    @Provides
+    @Singleton
+    fun provideSubscriptionApiService(retrofit: Retrofit): SubscriptionApiService {
+        return retrofit.create(SubscriptionApiService::class.java)
+    }
     
     /**
      * Provide NotificationHelper for push notification handling

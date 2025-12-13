@@ -36,6 +36,9 @@ import coil.compose.AsyncImage
 import com.salmanajmal.ziya.data.models.User
 import com.salmanajmal.ziya.utils.NetworkResult
 import com.salmanajmal.ziya.viewmodel.AuthViewModel
+import com.salmanajmal.ziya.ui.theme.LocalThemeManager
+import com.salmanajmal.ziya.ui.theme.ThemeMode
+import com.salmanajmal.ziya.ui.theme.LightColors
 
 @Composable
 fun ProfileScreen(
@@ -53,16 +56,127 @@ fun ProfileScreen(
 ) {
     val currentUserState by viewModel.currentUserState.collectAsState()
     val scrollState = rememberScrollState()
+    
+    // Theme management
+    val themeManager = LocalThemeManager.current
+    var showThemeDialog by remember { mutableStateOf(false) }
 
     val user = when (val state = currentUserState) {
         is NetworkResult.Success -> state.data
         else -> null
     }
+    
+    // Theme Selection Dialog
+    if (showThemeDialog) {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showThemeDialog = false }
+        ) {
+            Surface(
+                shape = RoundedCornerShape(28.dp),
+                color = Color.White,
+                tonalElevation = 0.dp,
+                shadowElevation = 8.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Header Icon
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Palette,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Choose Theme",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1F2937) // Gray-900
+                    )
+                    
+                    Text(
+                        text = "Customize your app appearance",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFF6B7280), // Gray-500
+                        modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
+                    )
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        ThemeOption(
+                            title = "Light",
+                            subtitle = "Always use light theme",
+                            isSelected = themeManager.themeMode == ThemeMode.LIGHT,
+                            onClick = {
+                                themeManager.updateThemeMode(ThemeMode.LIGHT)
+                                showThemeDialog = false
+                            }
+                        )
+                        
+                        ThemeOption(
+                            title = "Dark",
+                            subtitle = "Always use dark theme",
+                            isSelected = themeManager.themeMode == ThemeMode.DARK,
+                            onClick = {
+                                themeManager.updateThemeMode(ThemeMode.DARK)
+                                showThemeDialog = false
+                            }
+                        )
+                        
+                        ThemeOption(
+                            title = "System",
+                            subtitle = "Follow system settings",
+                            isSelected = themeManager.themeMode == ThemeMode.SYSTEM,
+                            onClick = {
+                                themeManager.updateThemeMode(ThemeMode.SYSTEM)
+                                showThemeDialog = false
+                            }
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    TextButton(
+                        onClick = { showThemeDialog = false },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Color(0xFF6B7280) // Gray-500
+                        )
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
     ) {
         // Header
@@ -71,7 +185,7 @@ fun ProfileScreen(
                 .fillMaxWidth()
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFFEC4899), Color(0xFFF43F5E)) // Pink-500 to Rose-500
+                        colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary) // Pink-500 to Rose-500
                     )
                 )
                 .padding(top = 48.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
@@ -84,8 +198,8 @@ fun ProfileScreen(
                         modifier = Modifier
                             .size(112.dp)
                             .clip(CircleShape)
-                            .border(4.dp, Color.White, CircleShape)
-                            .background(Color.LightGray)
+                            .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         if (user?.photos?.isNotEmpty() == true) {
                             AsyncImage(
@@ -110,7 +224,7 @@ fun ProfileScreen(
                     Surface(
                         onClick = onEditProfile,
                         shape = CircleShape,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface,
                         shadowElevation = 4.dp,
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
@@ -120,7 +234,7 @@ fun ProfileScreen(
                             Icon(
                                 imageVector = Icons.Default.CameraAlt,
                                 contentDescription = "Edit Profile",
-                                tint = Color(0xFFEC4899),
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -132,7 +246,7 @@ fun ProfileScreen(
                     text = if (user != null) "${user.name}, ${calculateUserAge(user.dob)}" else "Loading...",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 
                 // City
@@ -140,7 +254,7 @@ fun ProfileScreen(
                      Text(
                         text = "${user?.city}, ${user?.country ?: ""}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.9f),
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                 }
@@ -165,7 +279,7 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .offset(y = (-24).dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF1F2)), // Pink-50
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer), // Pink-50
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
@@ -177,13 +291,13 @@ fun ProfileScreen(
                         Text(
                             text = "Complete your profile",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFFBE185D), // Pink-700
+                            color = MaterialTheme.colorScheme.onPrimaryContainer, // Pink-700
                             fontWeight = FontWeight.Medium
                         )
                         Text(
                             text = "85%",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFFDB2777), // Pink-600
+                            color = MaterialTheme.colorScheme.primary, // Pink-600
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -235,6 +349,18 @@ fun ProfileScreen(
                     onClick = onSettings,
                     iconTint = Color(0xFF374151), // Gray-700
                     iconBgColor = Color(0xFFF3F4F6) // Gray-100
+                )
+                MenuItem(
+                    icon = Icons.Default.Palette,
+                    label = "Theme",
+                    subtitle = when (themeManager.themeMode) {
+                        ThemeMode.LIGHT -> "Light mode"
+                        ThemeMode.DARK -> "Dark mode"
+                        ThemeMode.SYSTEM -> "System default"
+                    },
+                    onClick = { showThemeDialog = true },
+                    iconTint = Color(0xFF7C3AED), // Violet-600
+                    iconBgColor = Color(0xFFF5F3FF) // Violet-50
                 )
                 MenuItem(
                     icon = Icons.Default.Notifications,
@@ -325,8 +451,8 @@ fun ProfileScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color(0xFFEF4444) // Red-500
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.error // Red-500
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
                 shape = RoundedCornerShape(12.dp),
@@ -353,12 +479,12 @@ fun ProfileScreen(
                 Text(
                     text = "Version 1.0.0",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "Made with ❤️",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
@@ -375,12 +501,12 @@ fun StatItem(count: String, label: String) {
             text = count,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onPrimary
         )
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = Color.White.copy(alpha = 0.8f)
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
         )
     }
 }
@@ -395,7 +521,7 @@ fun MenuSection(title: String, content: @Composable () -> Unit) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelSmall,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = 1.sp,
             modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 12.dp)
@@ -428,7 +554,7 @@ fun MenuItem(
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .background(iconBgColor, CircleShape),
+                    .background(iconTint.copy(alpha = 0.1f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -443,13 +569,13 @@ fun MenuItem(
                             .align(Alignment.TopEnd)
                             .offset(x = 4.dp, y = (-4).dp)
                             .size(18.dp)
-                            .background(Color.Red, CircleShape)
-                            .border(2.dp, Color.White, CircleShape),
+                            .background(MaterialTheme.colorScheme.error, CircleShape)
+                            .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = badgeCount.toString(),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onError,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -465,21 +591,21 @@ fun MenuItem(
                 Text(
                     text = label,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFF111827), // Gray-900
+                    color = MaterialTheme.colorScheme.onSurface, // Gray-900
                     fontWeight = FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF9CA3AF) // Gray-400
+                    color = MaterialTheme.colorScheme.onSurfaceVariant // Gray-400
                 )
             }
             
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = Color(0xFFD1D5DB), // Gray-300
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), // Gray-300
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -518,6 +644,53 @@ private fun calculateUserAge(dobString: String?): Int {
             return age
         } catch (e2: Exception) {
             return 25
+        }
+    }
+}
+
+/**
+ * Theme option item for the theme selection dialog
+ */
+@Composable
+private fun ThemeOption(
+    title: String,
+    subtitle: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        color = if (isSelected) LightColors.TertiaryContainer else Color.Transparent,
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isSelected) LightColors.Tertiary else LightColors.OnSurface
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isSelected) LightColors.Tertiary.copy(alpha = 0.8f) else LightColors.OnSurfaceVariant
+                )
+            }
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Selected",
+                    tint = LightColors.Tertiary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
     }
 }

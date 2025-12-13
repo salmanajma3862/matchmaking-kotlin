@@ -119,12 +119,12 @@ fun ChatScreen(
 
     Scaffold(
         modifier = Modifier.imePadding(),
-        containerColor = Color(0xFFF9FAFB), // Gray-50
+        containerColor = MaterialTheme.colorScheme.background, // Gray-50
         topBar = {
             // Custom Header
             Surface(
                 shadowElevation = 1.dp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier = Modifier
@@ -135,7 +135,7 @@ fun ChatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface)
                     }
                     
                     Spacer(modifier = Modifier.width(4.dp))
@@ -147,7 +147,7 @@ fun ChatScreen(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color.Gray)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .clickable {
                                 otherUser?.id?.let { userId ->
                                     navController.navigate(Screen.ProfileDetail.createRoute(userId, "match"))
@@ -163,7 +163,7 @@ fun ChatScreen(
                             text = otherUserName,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         
                         // Status
@@ -177,27 +177,27 @@ fun ChatScreen(
                             Text(
                                 "Online",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF4CAF50) // Green
+                                color = MaterialTheme.colorScheme.primary // Green
                             )
                         } else if (lastActive != null) {
                             Text(
                                 formatLastSeen(lastActive),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                     
                     // Action Icons
                     IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Call, contentDescription = "Call", tint = Color.Gray)
+                        Icon(Icons.Default.Call, contentDescription = "Call", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Videocam, contentDescription = "Video", tint = Color.Gray)
+                        Icon(Icons.Default.Videocam, contentDescription = "Video", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.Gray)
+                            Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         DropdownMenu(
                             expanded = showMenu,
