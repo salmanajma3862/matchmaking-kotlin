@@ -76,6 +76,7 @@ fun ChatScreen(
     var messageToDelete by remember { mutableStateOf<com.salmanajmal.ziya.data.models.Message?>(null) }
     var showMenu by remember { mutableStateOf(false) }
     var showReportDialog by remember { mutableStateOf(false) }
+    var currentlyPlayingAudioId by remember { mutableStateOf<String?>(null) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -311,7 +312,9 @@ fun ChatScreen(
                                 otherUser?.id?.let { userId ->
                                     navController.navigate(Screen.ProfileDetail.createRoute(userId, "match"))
                                 }
-                            }
+                            },
+                            currentlyPlayingMessageId = currentlyPlayingAudioId,
+                            onAudioPlay = { messageId -> currentlyPlayingAudioId = messageId }
                         )
                     }
                 }

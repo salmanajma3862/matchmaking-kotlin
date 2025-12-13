@@ -47,7 +47,9 @@ fun MessageBubble(
     onImageClick: (String) -> Unit = {},
     onLongClick: (Message) -> Unit = {},
     onReply: (Message) -> Unit = {},
-    onAvatarClick: () -> Unit = {}
+    onAvatarClick: () -> Unit = {},
+    currentlyPlayingMessageId: String? = null,
+    onAudioPlay: (String?) -> Unit = {}
 ) {
     val pinkColor = Color(0xFFEC4899) // Pink-500
     val roseColor = Color(0xFFF43F5E) // Rose-500
@@ -263,9 +265,24 @@ fun MessageBubble(
                         } else if (message.media?.audioUrl != null) {
                             // Audio Message
                             val context = androidx.compose.ui.platform.LocalContext.current
-                            var isPlaying by remember { mutableStateOf(false) }
                             var progress by remember { mutableStateOf(0f) }
                             val mediaPlayer = remember { android.media.MediaPlayer() }
+                            
+                            // Determine if this message's audio is currently playing
+                            val isThisPlaying = currentlyPlayingMessageId == message.id
+                            
+                            // Stop this audio if another audio started playing
+                            LaunchedEffect(currentlyPlayingMessageId) {
+                                if (currentlyPlayingMessageId != message.id && mediaPlayer.isPlaying) {
+                                    mediaPlayer.pause()
+                                    progress = 0f
+                                    try {
+                                        mediaPlayer.seekTo(0)
+                                    } catch (e: Exception) {
+                                        // Ignore seek errors
+                                    }
+                                }
+                            }
                             
                             DisposableEffect(Unit) {
                                 onDispose {
@@ -277,10 +294,10 @@ fun MessageBubble(
                             }
 
                             // Progress updater
-                            LaunchedEffect(isPlaying) {
-                                if (isPlaying) {
-                                    while (isPlaying) {
-                                        if (mediaPlayer.duration > 0) {
+                            LaunchedEffect(isThisPlaying) {
+                                if (isThisPlaying) {
+                                    while (currentlyPlayingMessageId == message.id) {
+                                        if (mediaPlayer.isPlaying && mediaPlayer.duration > 0) {
                                             progress = mediaPlayer.currentPosition.toFloat() / mediaPlayer.duration.toFloat()
                                         }
                                         kotlinx.coroutines.delay(100)
@@ -299,36 +316,38 @@ fun MessageBubble(
                                             .clip(CircleShape)
                                             .background(if (isMe) Color.White.copy(alpha = 0.2f) else Color(0xFFFCE7F3))
                                             .clickable {
-                                                if (isPlaying) {
+                                                if (isThisPlaying) {
                                                     mediaPlayer.pause()
-                                                    isPlaying = false
+                                                    onAudioPlay(null) // Notify that nothing is playing now
                                                 } else {
+                                                    // Notify that this message's audio is now playing
+                                                    onAudioPlay(message.id)
                                                     try {
                                                         if (mediaPlayer.duration == 0) { // Not prepared
                                                             mediaPlayer.setDataSource(message.media.audioUrl)
                                                             mediaPlayer.prepareAsync()
                                                             mediaPlayer.setOnPreparedListener { 
                                                                 it.start() 
-                                                                isPlaying = true
                                                             }
                                                             mediaPlayer.setOnCompletionListener { 
-                                                                isPlaying = false 
+                                                                onAudioPlay(null) // Notify playback completed
                                                                 progress = 0f
                                                             }
                                                         } else {
+                                                            mediaPlayer.seekTo(0)
                                                             mediaPlayer.start()
-                                                            isPlaying = true
                                                         }
                                                     } catch (e: Exception) {
                                                         e.printStackTrace()
+                                                        onAudioPlay(null)
                                                     }
                                                 }
                                             },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
-                                            imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                            contentDescription = if (isPlaying) "Pause" else "Play",
+                                            imageVector = if (isThisPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                            contentDescription = if (isThisPlaying) "Pause" else "Play",
                                             tint = if (isMe) Color.White else pinkColor,
                                             modifier = Modifier.size(16.dp)
                                         )
