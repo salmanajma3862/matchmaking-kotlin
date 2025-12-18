@@ -217,3 +217,25 @@ data class FamilyLastMessage(
     val type: String?,
     val createdAt: String?
 )
+
+/**
+ * Profile Viewer Entry - Represents a user who viewed a profile (premium feature)
+ */
+data class ProfileViewerEntry(
+    val user: User?,
+    val viewedAt: String?
+)
+
+/**
+ * Profile Viewers Response - Response from getProfileViewers and getViewedProfiles
+ */
+data class ProfileViewersResponse(
+    val success: Boolean,
+    val data: List<ProfileViewerEntry>?,
+    val total: Int?,
+    val page: Int?,
+    val limit: Int?,
+    val hasMore: Boolean?,
+    val message: String? = null,
+    val code: String? = null
+)

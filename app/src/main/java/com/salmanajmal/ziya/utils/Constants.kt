@@ -40,6 +40,10 @@ object Constants {
         const val UPDATE_PROFILE = "$USER_BASE/profile"
         const val DELETE_ACCOUNT = "$USER_BASE/account"
         
+        // Profile View Tracking (Premium Features)
+        const val GET_PROFILE_VIEWERS = "$USER_BASE/profile/viewers"
+        const val GET_VIEWED_PROFILES = "$USER_BASE/profile/viewed"
+        
         // Swipe endpoints
         const val SWIPE_BASE = "api/swipe"
         const val SWIPE_ACTION = "$SWIPE_BASE/"

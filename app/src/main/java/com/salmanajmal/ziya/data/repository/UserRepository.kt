@@ -57,6 +57,74 @@ class UserRepository @Inject constructor(
     }
     
     /**
+     * Get users who viewed my profile (Premium Feature)
+     */
+    fun getProfileViewers(page: Int = 1, limit: Int = 20): Flow<NetworkResult<com.salmanajmal.ziya.data.models.ProfileViewersResponse>> = flow {
+        emit(NetworkResult.Loading())
+        
+        try {
+            val response = userApiService.getProfileViewers(page, limit)
+            
+            if (response.isSuccessful && response.body() != null) {
+                val viewersResponse = response.body()!!
+                
+                if (viewersResponse.success) {
+                    emit(NetworkResult.Success(viewersResponse))
+                } else {
+                    // Check if it's a premium-only error
+                    if (viewersResponse.code == "PREMIUM_REQUIRED") {
+                        emit(NetworkResult.Error(viewersResponse.message ?: "This feature requires premium"))
+                    } else {
+                        emit(NetworkResult.Error(viewersResponse.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+                    }
+                }
+            } else {
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: HttpException) {
+            emit(NetworkResult.Error(e.message() ?: Constants.ErrorMessages.SERVER_ERROR))
+        } catch (e: IOException) {
+            emit(NetworkResult.Error(Constants.ErrorMessages.NETWORK_ERROR))
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+    
+    /**
+     * Get profiles I have viewed (Premium Feature)
+     */
+    fun getViewedProfiles(page: Int = 1, limit: Int = 20): Flow<NetworkResult<com.salmanajmal.ziya.data.models.ProfileViewersResponse>> = flow {
+        emit(NetworkResult.Loading())
+        
+        try {
+            val response = userApiService.getViewedProfiles(page, limit)
+            
+            if (response.isSuccessful && response.body() != null) {
+                val viewedResponse = response.body()!!
+                
+                if (viewedResponse.success) {
+                    emit(NetworkResult.Success(viewedResponse))
+                } else {
+                    // Check if it's a premium-only error
+                    if (viewedResponse.code == "PREMIUM_REQUIRED") {
+                        emit(NetworkResult.Error(viewedResponse.message ?: "This feature requires premium"))
+                    } else {
+                        emit(NetworkResult.Error(viewedResponse.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+                    }
+                }
+            } else {
+                emit(NetworkResult.Error(response.message() ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+            }
+        } catch (e: HttpException) {
+            emit(NetworkResult.Error(e.message() ?: Constants.ErrorMessages.SERVER_ERROR))
+        } catch (e: IOException) {
+            emit(NetworkResult.Error(Constants.ErrorMessages.NETWORK_ERROR))
+        } catch (e: Exception) {
+            emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
+        }
+    }
+    
+    /**
      * Get recommended users feed
      */
     fun getFeed(page: Int = 1, limit: Int = 10): Flow<NetworkResult<List<User>>> = flow {

@@ -68,6 +68,24 @@ interface UserApiService {
     ): Response<UserProfileResponse>
     
     /**
+     * Get users who viewed my profile (Premium Feature)
+     */
+    @GET(Constants.Endpoints.GET_PROFILE_VIEWERS)
+    suspend fun getProfileViewers(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<com.salmanajmal.ziya.data.models.ProfileViewersResponse>
+    
+    /**
+     * Get profiles I have viewed (Premium Feature)
+     */
+    @GET(Constants.Endpoints.GET_VIEWED_PROFILES)
+    suspend fun getViewedProfiles(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<com.salmanajmal.ziya.data.models.ProfileViewersResponse>
+    
+    /**
      * Update user profile
      */
     @PUT(Constants.Endpoints.UPDATE_PROFILE)
