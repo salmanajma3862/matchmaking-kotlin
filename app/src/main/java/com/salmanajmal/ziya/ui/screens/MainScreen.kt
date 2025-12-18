@@ -8,7 +8,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.RemoveRedEye
+import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -76,7 +76,7 @@ fun MainScreen(
         Icons.Rounded.Favorite, 
         Icons.Rounded.Star, 
         Icons.Rounded.Email, 
-        Icons.Rounded.RemoveRedEye,
+        Icons.Rounded.Groups,
         Icons.Rounded.Person
     )
 

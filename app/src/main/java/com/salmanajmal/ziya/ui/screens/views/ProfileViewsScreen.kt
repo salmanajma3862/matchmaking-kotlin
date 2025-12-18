@@ -292,7 +292,7 @@ private fun ProfileViewerCard(
         ) {
             Text(
                 text = if (isPremium) {
-                    "${user.name}, ${calculateAge(user.dob)}"
+                    "${user.name}, ${user.age ?: calculateAge(user.dob)}"
                 } else {
                     "• • • • •"
                 },

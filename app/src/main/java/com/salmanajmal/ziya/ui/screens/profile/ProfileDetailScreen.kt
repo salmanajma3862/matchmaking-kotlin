@@ -14,6 +14,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -107,6 +109,8 @@ fun ProfileDetailScreen(
                 onReject = { viewModel.rejectMatch(userId) },
                 onUnmatch = { viewModel.unmatchUser(userId) },
                 onMessage = { viewModel.initiateMessage(userId) },
+                onLike = { viewModel.acceptMatch(userId) },
+                onNope = { viewModel.rejectMatch(userId) },
                 snackbarHostState = snackbarHostState
             )
         }
@@ -124,6 +128,8 @@ fun ProfileDetailContent(
     onReject: () -> Unit,
     onUnmatch: () -> Unit,
     onMessage: () -> Unit,
+    onLike: () -> Unit,
+    onNope: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     val configuration = LocalConfiguration.current
@@ -241,7 +247,7 @@ fun ProfileDetailContent(
                 Column(
                     modifier = Modifier
                         .padding(24.dp)
-                        .padding(bottom = 130.dp) // Extra space for bottom action bar
+                        .padding(bottom = 150.dp) // Extra space for bottom action bar
                 ) {
                     // Basic Info
                     Row(
@@ -422,24 +428,24 @@ fun ProfileDetailContent(
         }
 
         // Bottom Action Bar (Fixed at bottom)
-        if (matchStatus != "none") {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .navigationBarsPadding()
-                    .padding(16.dp)
-            ) {
-                BottomActionBar(
-                    matchStatus = matchStatus,
-                    onUndoSwipe = onUndoSwipe,
-                    onAccept = onAccept,
-                    onReject = onReject,
-                    onUnmatch = onUnmatch,
-                    onMessage = onMessage
-                )
-            }
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)
+                .navigationBarsPadding()
+                .padding(16.dp)
+        ) {
+            BottomActionBar(
+                matchStatus = matchStatus,
+                onUndoSwipe = onUndoSwipe,
+                onAccept = onAccept,
+                onReject = onReject,
+                onUnmatch = onUnmatch,
+                onMessage = onMessage,
+                onLike = onLike,
+                onNope = onNope
+            )
         }
         
         SnackbarHost(
@@ -554,7 +560,9 @@ fun BottomActionBar(
     onAccept: () -> Unit,
     onReject: () -> Unit,
     onUnmatch: () -> Unit,
-    onMessage: () -> Unit
+    onMessage: () -> Unit,
+    onLike: () -> Unit,
+    onNope: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -619,6 +627,43 @@ fun BottomActionBar(
                     Icon(Icons.Outlined.Message, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Message")
+                }
+            }
+            "none" -> {
+                // Nope button
+                Button(
+                    onClick = onNope,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE5E7EB)),
+                    modifier = Modifier
+                        .weight(0.4f)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(28.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = "Pass",
+                        tint = Color(0xFF6B7280),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                // Like button
+                Button(
+                    onClick = onLike,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                    modifier = Modifier
+                        .weight(0.6f)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(28.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Favorite,
+                        contentDescription = "Like",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Like", color = Color.White, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
