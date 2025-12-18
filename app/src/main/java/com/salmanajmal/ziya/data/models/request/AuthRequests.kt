@@ -88,7 +88,9 @@ data class CompleteProfileRequest(
     val familyBackground: String? = null,
     val numberOfSiblings: Int? = null,
     val livingWithFamily: Boolean? = null,
-    val preferences: UserPreferencesRequest? = null
+    val preferences: UserPreferencesRequest? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )
 
 /**

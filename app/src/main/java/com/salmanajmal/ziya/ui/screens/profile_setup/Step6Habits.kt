@@ -3,13 +3,16 @@ package com.salmanajmal.ziya.ui.screens.profile_setup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.salmanajmal.ziya.ui.components.inputs.AppTextField
 import com.salmanajmal.ziya.ui.theme.AppSpacing
 import com.salmanajmal.ziya.viewmodel.ProfileSetupEvent
 import com.salmanajmal.ziya.viewmodel.ProfileSetupState
@@ -82,6 +85,25 @@ fun Step6Habits(
             value = state.dietPreference,
             options = dietPreferences,
             onValueChange = { onEvent(ProfileSetupEvent.UpdateDietPreference(it)) }
+        )
+
+        Spacer(modifier = Modifier.height(AppSpacing.Large))
+
+        // Number of Siblings
+        Text(
+            text = "Number of Siblings",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(AppSpacing.Small))
+
+        AppTextField(
+            value = state.numberOfSiblings,
+            onValueChange = { onEvent(ProfileSetupEvent.UpdateNumberOfSiblings(it)) },
+            label = "Number of Siblings",
+            placeholder = "e.g. 2",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

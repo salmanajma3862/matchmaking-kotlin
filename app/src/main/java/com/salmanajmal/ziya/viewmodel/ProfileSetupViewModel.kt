@@ -8,6 +8,7 @@ import com.salmanajmal.ziya.data.models.request.AgeRangeRequest
 import com.salmanajmal.ziya.data.models.request.CompleteProfileRequest
 import com.salmanajmal.ziya.data.models.request.UserPreferencesRequest
 import com.salmanajmal.ziya.data.repository.UserRepository
+import com.salmanajmal.ziya.service.LocationFetchResult
 import com.salmanajmal.ziya.utils.FileUtils
 import com.salmanajmal.ziya.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,6 +35,10 @@ data class ProfileSetupState(
     val city: String = "",
     val country: String = "",
     val address: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val isLocationLoading: Boolean = false,
+    val locationError: String? = null,
 
     // Step 3: Photos
     val photos: List<Uri> = emptyList(),
@@ -56,6 +61,7 @@ data class ProfileSetupState(
     val drinking: Boolean = false,
     val dietPreference: String = "",
     val livingWithFamily: Boolean = false,
+    val numberOfSiblings: String = "",
 
     val interests: List<String> = emptyList(),
     val hobbies: List<String> = emptyList(),
@@ -81,7 +87,8 @@ data class ProfileSetupState(
 @HiltViewModel
 class ProfileSetupViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val application: Application
+    private val application: Application,
+    private val locationService: com.salmanajmal.ziya.service.LocationService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileSetupState())
@@ -99,6 +106,21 @@ class ProfileSetupViewModel @Inject constructor(
             is ProfileSetupEvent.UpdateCity -> _state.update { it.copy(city = event.city) }
             is ProfileSetupEvent.UpdateCountry -> _state.update { it.copy(country = event.country) }
             is ProfileSetupEvent.UpdateAddress -> _state.update { it.copy(address = event.address) }
+            
+            is ProfileSetupEvent.RequestLocation -> fetchCurrentLocation()
+            is ProfileSetupEvent.UpdateLocation -> _state.update { 
+                it.copy(
+                    city = event.city,
+                    country = event.country,
+                    latitude = event.latitude,
+                    longitude = event.longitude,
+                    isLocationLoading = false,
+                    locationError = null
+                ) 
+            }
+            is ProfileSetupEvent.SetLocationLoading -> _state.update { it.copy(isLocationLoading = event.isLoading) }
+            is ProfileSetupEvent.SetLocationError -> _state.update { it.copy(locationError = event.error, isLocationLoading = false) }
+            is ProfileSetupEvent.ClearLocationError -> _state.update { it.copy(locationError = null) }
             
             is ProfileSetupEvent.AddPhoto -> {
                 val currentPhotos = _state.value.photos.toMutableList()
@@ -131,6 +153,7 @@ class ProfileSetupViewModel @Inject constructor(
             is ProfileSetupEvent.UpdateDrinking -> _state.update { it.copy(drinking = event.drinking) }
             is ProfileSetupEvent.UpdateDietPreference -> _state.update { it.copy(dietPreference = event.dietPreference) }
             is ProfileSetupEvent.UpdateLivingWithFamily -> _state.update { it.copy(livingWithFamily = event.livingWithFamily) }
+            is ProfileSetupEvent.UpdateNumberOfSiblings -> _state.update { it.copy(numberOfSiblings = event.numberOfSiblings) }
 
             // Step 7
             is ProfileSetupEvent.ToggleInterest -> {
@@ -205,6 +228,7 @@ class ProfileSetupViewModel @Inject constructor(
                 drinking = currentState.drinking,
                 dietPreference = currentState.dietPreference,
                 livingWithFamily = currentState.livingWithFamily,
+                numberOfSiblings = currentState.numberOfSiblings.toIntOrNull(),
                 interests = currentState.interests,
                 hobbies = currentState.hobbies,
                 preferences = UserPreferencesRequest(
@@ -214,7 +238,9 @@ class ProfileSetupViewModel @Inject constructor(
                     ),
                     genderPreference = currentState.partnerGender,
                     // Add other preferences as needed
-                )
+                ),
+                latitude = currentState.latitude,
+                longitude = currentState.longitude
             )
 
             userRepository.completeProfile(photoFiles, request).collect { result ->
@@ -233,6 +259,35 @@ class ProfileSetupViewModel @Inject constructor(
             }
         }
     }
+
+    private fun fetchCurrentLocation() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLocationLoading = true, locationError = null) }
+            
+            when (val result = locationService.getCurrentLocation()) {
+                is LocationFetchResult.Success -> {
+                    _state.update { 
+                        it.copy(
+                            city = result.city,
+                            country = result.country,
+                            latitude = result.latitude,
+                            longitude = result.longitude,
+                            isLocationLoading = false,
+                            locationError = null
+                        )
+                    }
+                }
+                is LocationFetchResult.Error -> {
+                    _state.update { 
+                        it.copy(
+                            isLocationLoading = false,
+                            locationError = result.message
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 sealed class ProfileSetupEvent {
@@ -243,6 +298,18 @@ sealed class ProfileSetupEvent {
     data class UpdateCity(val city: String) : ProfileSetupEvent()
     data class UpdateCountry(val country: String) : ProfileSetupEvent()
     data class UpdateAddress(val address: String) : ProfileSetupEvent()
+    
+    // Location events
+    object RequestLocation : ProfileSetupEvent()
+    data class UpdateLocation(
+        val city: String,
+        val country: String,
+        val latitude: Double,
+        val longitude: Double
+    ) : ProfileSetupEvent()
+    data class SetLocationLoading(val isLoading: Boolean) : ProfileSetupEvent()
+    data class SetLocationError(val error: String) : ProfileSetupEvent()
+    object ClearLocationError : ProfileSetupEvent()
     
     data class AddPhoto(val uri: Uri) : ProfileSetupEvent()
     data class RemovePhoto(val uri: Uri) : ProfileSetupEvent()
@@ -265,6 +332,7 @@ sealed class ProfileSetupEvent {
     data class UpdateDrinking(val drinking: Boolean) : ProfileSetupEvent()
     data class UpdateDietPreference(val dietPreference: String) : ProfileSetupEvent()
     data class UpdateLivingWithFamily(val livingWithFamily: Boolean) : ProfileSetupEvent()
+    data class UpdateNumberOfSiblings(val numberOfSiblings: String) : ProfileSetupEvent()
 
     // Step 7
     data class ToggleInterest(val interest: String) : ProfileSetupEvent()

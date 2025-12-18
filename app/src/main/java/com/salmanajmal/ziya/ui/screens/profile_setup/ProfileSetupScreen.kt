@@ -136,7 +136,7 @@ fun ProfileSetupScreen(
 fun isStepValid(state: com.salmanajmal.ziya.viewmodel.ProfileSetupState): Boolean {
     return when (state.currentStep) {
         1 -> state.name.isNotBlank() && state.gender.isNotBlank() && state.dob != null
-        2 -> state.city.isNotBlank() && state.country.isNotBlank()
+        2 -> state.city.isNotBlank() && state.country.isNotBlank() && state.latitude != null && state.longitude != null
         3 -> state.photos.isNotEmpty()
         4 -> state.height.isNotBlank() && state.weight.isNotBlank()
         5 -> state.religion.isNotBlank() && state.maritalStatus.isNotBlank() && state.education.isNotBlank() && state.profession.isNotBlank()
