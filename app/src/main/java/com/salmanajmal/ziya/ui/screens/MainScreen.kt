@@ -8,6 +8,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.RemoveRedEye
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -23,6 +24,7 @@ import androidx.navigation.NavController
 import com.salmanajmal.ziya.ui.screens.matches.LikesScreen
 import com.salmanajmal.ziya.ui.screens.matches.MatchScreen
 import com.salmanajmal.ziya.ui.screens.messages.ConversationListScreen
+import com.salmanajmal.ziya.ui.screens.views.ProfileViewsScreen
 import androidx.compose.runtime.collectAsState
 import com.salmanajmal.ziya.data.models.User
 import com.salmanajmal.ziya.utils.NetworkResult
@@ -68,8 +70,15 @@ fun MainScreen(
     }
 
     var selectedItem by remember { mutableIntStateOf(0) }
-    val items = listOf("Feed", "Likes", "Matches", "Messages", "Profile")
-    val icons = listOf(Icons.Rounded.Home, Icons.Rounded.Favorite, Icons.Rounded.Star, Icons.Rounded.Email, Icons.Rounded.Person)
+    val items = listOf("Feed", "Likes", "Matches", "Chat", "Visitors", "Profile")
+    val icons = listOf(
+        Icons.Rounded.Home, 
+        Icons.Rounded.Favorite, 
+        Icons.Rounded.Star, 
+        Icons.Rounded.Email, 
+        Icons.Rounded.RemoveRedEye,
+        Icons.Rounded.Person
+    )
 
     Scaffold(
         bottomBar = {
@@ -103,7 +112,14 @@ fun MainScreen(
                     navController = navController,
                     onNavigateToMatches = { selectedItem = 2 }
                 )
-                4 -> com.salmanajmal.ziya.ui.screens.profile.ProfileScreen(
+                4 -> ProfileViewsScreen(
+                    isPremium = user?.isPremium == true,
+                    onNavigateToProfileDetail = onNavigateToProfileDetail,
+                    onNavigateToSubscription = { 
+                        navController.navigate(com.salmanajmal.ziya.ui.navigation.Screen.Subscription.route) 
+                    }
+                )
+                5 -> com.salmanajmal.ziya.ui.screens.profile.ProfileScreen(
                     onViewProfile = { 
                         user?.id?.let { userId ->
                             onNavigateToProfileDetail(userId, "none")
@@ -125,3 +141,4 @@ fun MainScreen(
         }
     }
 }
+
