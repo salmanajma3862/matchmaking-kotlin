@@ -2,6 +2,7 @@ package com.salmanajmal.ziya.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.salmanajmal.ziya.data.models.FeedFilters
 import com.salmanajmal.ziya.data.models.User
 import com.salmanajmal.ziya.data.models.response.SwipeResponseData
 import com.salmanajmal.ziya.data.repository.SwipeRepository
@@ -31,6 +32,10 @@ class FeedViewModel @Inject constructor(
     // Current list of users to display
     private val _userList = MutableStateFlow<List<User>>(emptyList())
     val userList: StateFlow<List<User>> = _userList.asStateFlow()
+    
+    // Filter state
+    private val _filters = MutableStateFlow(FeedFilters.DEFAULT)
+    val filters: StateFlow<FeedFilters> = _filters.asStateFlow()
 
     private var currentPage = 1
     private var isLastPage = false
@@ -40,12 +45,17 @@ class FeedViewModel @Inject constructor(
         loadFeed()
     }
 
+
+
     fun loadFeed() {
         if (isLoading || isLastPage) return
 
         isLoading = true
         viewModelScope.launch {
-            userRepository.getFeed(page = currentPage).collect { result ->
+            userRepository.getFeed(
+                page = currentPage,
+                filters = _filters.value
+            ).collect { result ->
                 _feedState.value = result
                 
                 if (result is NetworkResult.Success) {
@@ -95,7 +105,43 @@ class FeedViewModel @Inject constructor(
     fun refreshFeed() {
         currentPage = 1
         isLastPage = false
+        isLoading = false
         _userList.value = emptyList()
         loadFeed()
     }
+    
+    /**
+     * Apply new filters and refresh the feed
+     */
+    fun applyFilters(newFilters: FeedFilters) {
+        _filters.value = newFilters
+        refreshFeed()
+    }
+    
+    /**
+     * Clear a specific filter by name and refresh
+     */
+    fun clearFilter(filterName: String) {
+        val current = _filters.value
+        val updated = when (filterName) {
+            "age" -> current.copy(minAge = null, maxAge = null)
+            "city" -> current.copy(city = null)
+            "religion" -> current.copy(religion = null)
+            "maritalStatus" -> current.copy(maritalStatus = null)
+            "education" -> current.copy(education = null)
+            "height" -> current.copy(minHeight = null, maxHeight = null)
+            "smoking" -> current.copy(smoking = null)
+            "drinking" -> current.copy(drinking = null)
+            else -> current
+        }
+        applyFilters(updated)
+    }
+    
+    /**
+     * Clear all filters and refresh
+     */
+    fun clearAllFilters() {
+        applyFilters(FeedFilters.DEFAULT)
+    }
 }
+

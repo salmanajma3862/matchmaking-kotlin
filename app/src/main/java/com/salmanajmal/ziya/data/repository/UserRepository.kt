@@ -1,6 +1,7 @@
 package com.salmanajmal.ziya.data.repository
 
 import com.salmanajmal.ziya.data.api.UserApiService
+import com.salmanajmal.ziya.data.models.FeedFilters
 import com.salmanajmal.ziya.data.models.User
 import com.salmanajmal.ziya.data.models.request.*
 import com.salmanajmal.ziya.data.preferences.UserPreferences
@@ -125,13 +126,30 @@ class UserRepository @Inject constructor(
     }
     
     /**
-     * Get recommended users feed
+     * Get recommended users feed with optional filters
      */
-    fun getFeed(page: Int = 1, limit: Int = 10): Flow<NetworkResult<List<User>>> = flow {
+    fun getFeed(
+        page: Int = 1, 
+        limit: Int = 10,
+        filters: FeedFilters = FeedFilters.DEFAULT
+    ): Flow<NetworkResult<List<User>>> = flow {
         emit(NetworkResult.Loading())
         
         try {
-            val response = userApiService.getFeed(page, limit)
+            val response = userApiService.getFeed(
+                page = page,
+                limit = limit,
+                minAge = filters.minAge,
+                maxAge = filters.maxAge,
+                city = filters.city,
+                religion = filters.religion,
+                maritalStatus = filters.maritalStatus?.joinToString(","),
+                education = filters.education,
+                minHeight = filters.minHeight,
+                maxHeight = filters.maxHeight,
+                smoking = filters.smoking,
+                drinking = filters.drinking
+            )
             
             if (response.isSuccessful && response.body() != null) {
                 val apiResponse = response.body()!!
@@ -152,6 +170,7 @@ class UserRepository @Inject constructor(
             emit(NetworkResult.Error(e.message ?: Constants.ErrorMessages.UNKNOWN_ERROR))
         }
     }
+
 
     /**
      * Update user profile

@@ -51,12 +51,22 @@ interface UserApiService {
     ): Response<AuthResponse>
 
     /**
-     * Get recommended users feed
+     * Get recommended users feed with optional filters
      */
     @GET(Constants.Endpoints.GET_FEED)
     suspend fun getFeed(
         @Query("page") page: Int = 1,
-        @Query("limit") limit: Int = 10
+        @Query("limit") limit: Int = 10,
+        @Query("minAge") minAge: Int? = null,
+        @Query("maxAge") maxAge: Int? = null,
+        @Query("city") city: String? = null,
+        @Query("religion") religion: String? = null,
+        @Query("maritalStatus") maritalStatus: String? = null,
+        @Query("education") education: String? = null,
+        @Query("minHeight") minHeight: Int? = null,
+        @Query("maxHeight") maxHeight: Int? = null,
+        @Query("smoking") smoking: Boolean? = null,
+        @Query("drinking") drinking: Boolean? = null
     ): Response<ApiResponse<List<com.salmanajmal.ziya.data.models.User>>>
 
     /**
